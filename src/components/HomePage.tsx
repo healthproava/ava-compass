@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Heart, Shield, Users, Star, CheckCircle, ArrowRight, Phone, Mail, MapPin, Award, Clock, Search } from 'lucide-react';
+import { Heart, Shield, Users, Star, CheckCircle, ArrowRight, Phone, Mail, MapPin, Award, Clock, Search, TrendingUp, Brain, Timer, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ParallaxDivider from './ParallaxDivider';
 import FeedbackSystem from './FeedbackSystem';
@@ -132,6 +132,172 @@ const HomePage = () => {
                   <p className="text-text-secondary">{feature.description}</p>
                 </CardContent>
               </Card>)}
+          </div>
+        </div>
+      </section>
+
+      {/* Parallax Divider */}
+      <ParallaxDivider />
+
+      {/* Senior Care Statistics & AI Benefits Section */}
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="mb-6 bg-blue-100 text-blue-800 border-blue-200">
+              Industry Insights & AI Innovation
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-6">
+              The Senior Care Challenge & AI Solution
+            </h2>
+            <p className="text-xl text-text-secondary max-w-3xl mx-auto">
+              Understanding the current state of senior care and how artificial intelligence is revolutionizing the industry for better outcomes.
+            </p>
+          </div>
+
+          {/* Problem Statistics */}
+          <div className="mb-16">
+            <h3 className="text-2xl md:text-3xl font-bold text-text-primary text-center mb-12">
+              The Current State of Senior Care
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <Card className="text-center bg-red-50 border-red-100 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <TrendingUp className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <div className="text-3xl font-bold text-red-600 mb-2">54.1M</div>
+                  <p className="text-text-secondary">Americans aged 65+ (2019)</p>
+                  <p className="text-sm text-text-secondary mt-2">Growing to 94.7M by 2060</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center bg-orange-50 border-orange-100 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <Timer className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                  <div className="text-3xl font-bold text-orange-600 mb-2">3-6</div>
+                  <p className="text-text-secondary">Months average search time</p>
+                  <p className="text-sm text-text-secondary mt-2">Without professional help</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center bg-yellow-50 border-yellow-100 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <DollarSign className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+                  <div className="text-3xl font-bold text-yellow-700 mb-2">$108K</div>
+                  <p className="text-text-secondary">Average annual nursing home cost</p>
+                  <p className="text-sm text-text-secondary mt-2">$61K for assisted living</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center bg-purple-50 border-purple-100 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <Users className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+                  <div className="text-3xl font-bold text-purple-600 mb-2">70%</div>
+                  <p className="text-text-secondary">Will need long-term care</p>
+                  <p className="text-sm text-text-secondary mt-2">Over their lifetime</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* AI Solution Benefits */}
+          <div className="mb-16">
+            <h3 className="text-2xl md:text-3xl font-bold text-text-primary text-center mb-12">
+              How AI Transforms Senior Care Search
+            </h3>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-text-primary mb-2">Intelligent Matching</h4>
+                    <p className="text-text-secondary">AI analyzes 200+ factors including medical needs, preferences, location, and budget to find perfect matches in seconds instead of months.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Timer className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-text-primary mb-2">95% Time Reduction</h4>
+                    <p className="text-text-secondary">Reduce search time from 3-6 months to just days. AI pre-screens facilities, checks availability, and verifies insurance acceptance automatically.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-text-primary mb-2">Predictive Analytics</h4>
+                    <p className="text-text-secondary">AI predicts care progression and recommends facilities that can adapt to changing needs, reducing future transitions by 60%.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-text-primary mb-2">Cost Optimization</h4>
+                    <p className="text-text-secondary">AI identifies cost-effective options and maximizes insurance benefits, helping families save an average of $18,000 annually.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 text-white">
+                <h4 className="text-2xl font-bold mb-6">AI-Powered Results</h4>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                    <span>Traditional Search</span>
+                    <span className="text-red-300">3-6 months</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                    <span>With AVA</span>
+                    <span className="text-green-300">2-5 days</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                    <span>Match Accuracy</span>
+                    <span className="text-green-300">98.2%</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                    <span>Family Satisfaction</span>
+                    <span className="text-green-300">96.8%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Average Cost Savings</span>
+                    <span className="text-green-300">$18,000/year</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Veteran-Specific Statistics */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-white">
+            <div className="text-center mb-10">
+              <Shield className="h-16 w-16 mx-auto mb-4 text-blue-200" />
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">Supporting Our Veterans</h3>
+              <p className="text-blue-100 text-lg max-w-2xl mx-auto">
+                Specialized AI algorithms understand veteran-specific needs and VA benefit optimization.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold text-blue-200 mb-2">9.2M</div>
+                <p className="text-blue-100">Veterans aged 65+</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-blue-200 mb-2">85%</div>
+                <p className="text-blue-100">Qualify for VA benefits</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-blue-200 mb-2">$2,431</div>
+                <p className="text-blue-100">Average monthly VA benefit</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
