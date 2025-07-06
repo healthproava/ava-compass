@@ -8,16 +8,16 @@ import ThreeMapView from './ThreeMapView';
 
 interface Facility {
   id: string;
-  title: string;
-  address: string;
+  name: string;
+  address_line1?: string;
   latitude?: number;
   longitude?: number;
   rating?: number;
-  rating_count?: number;
-  phone_number?: string;
+  reviews_count?: number;
+  phone?: string;
   website?: string;
-  place_type?: string;
-  thumbnail_url?: string;
+  facility_type?: string;
+  image_urls?: string[];
 }
 
 interface ResultsContainerProps {
@@ -45,10 +45,10 @@ const ResultsContainer = ({
           lat: facility.latitude!, 
           lng: facility.longitude! 
         },
-        title: facility.title,
-        address: facility.address,
+        title: facility.name,
+        address: facility.address_line1 || '',
         rating: facility.rating,
-        type: facility.place_type
+        type: facility.facility_type
       }));
 
     setMapMarkers(markers);

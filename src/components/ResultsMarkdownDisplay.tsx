@@ -6,14 +6,16 @@ import { MapPin, Phone, ExternalLink, Star } from 'lucide-react';
 
 interface Facility {
   id: string;
-  title: string;
-  address: string;
+  name: string;
+  address_line1?: string;
+  latitude?: number;
+  longitude?: number;
   rating?: number;
-  rating_count?: number;
-  phone_number?: string;
+  reviews_count?: number;
+  phone?: string;
   website?: string;
-  place_type?: string;
-  thumbnail_url?: string;
+  facility_type?: string;
+  image_urls?: string[];
 }
 
 interface ResultsMarkdownDisplayProps {
@@ -28,7 +30,7 @@ const ResultsMarkdownDisplay = ({
   onFacilitySelect 
 }: ResultsMarkdownDisplayProps) => {
   const openMapLink = (facility: Facility) => {
-    const query = encodeURIComponent(`${facility.title} ${facility.address}`);
+    const query = encodeURIComponent(`${facility.name} ${facility.address_line1 || ''}`);
     window.open(`https://www.google.com/maps/search/${query}`, '_blank');
   };
 
@@ -84,19 +86,19 @@ const ResultsMarkdownDisplay = ({
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <h3 className="font-semibold text-text-primary mb-1 group-hover:text-primary-bright transition-colors">
-                          {facility.title}
+                          {facility.name}
                         </h3>
                         <Badge variant="secondary" className="text-xs">
-                          {facility.place_type || 'Senior Care'}
+                          {facility.facility_type || 'Senior Care'}
                         </Badge>
                       </div>
                       {facility.rating && facility.rating > 0 && (
                         <div className="flex items-center space-x-1">
                           <Star className="h-4 w-4 fill-warning text-warning" />
                           <span className="text-sm font-medium">{facility.rating}</span>
-                          {facility.rating_count && facility.rating_count > 0 && (
+                          {facility.reviews_count && facility.reviews_count > 0 && (
                             <span className="text-xs text-text-secondary">
-                              ({facility.rating_count})
+                              ({facility.reviews_count})
                             </span>
                           )}
                         </div>
@@ -107,23 +109,23 @@ const ResultsMarkdownDisplay = ({
                     <div className="space-y-2 mb-4">
                       <div className="flex items-start space-x-2">
                         <MapPin className="h-4 w-4 text-text-secondary mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-text-secondary">{facility.address}</span>
+                        <span className="text-sm text-text-secondary">{facility.address_line1}</span>
                       </div>
                       
-                      {facility.phone_number && (
+                      {facility.phone && (
                         <div className="flex items-center space-x-2">
                           <Phone className="h-4 w-4 text-text-secondary" />
-                          <span className="text-sm text-text-secondary">{facility.phone_number}</span>
+                          <span className="text-sm text-text-secondary">{facility.phone}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Thumbnail */}
-                    {facility.thumbnail_url && (
+                    {facility.image_urls && facility.image_urls.length > 0 && (
                       <div className="mb-4">
                         <img 
-                          src={facility.thumbnail_url} 
-                          alt={facility.title}
+                          src={facility.image_urls[0]} 
+                          alt={facility.name}
                           className="w-full h-32 object-cover rounded-md"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
@@ -134,12 +136,12 @@ const ResultsMarkdownDisplay = ({
 
                     {/* Action Buttons */}
                     <div className="flex space-x-2">
-                      {facility.phone_number && (
+                      {facility.phone && (
                         <Button
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            callFacility(facility.phone_number!);
+                            callFacility(facility.phone!);
                           }}
                           className="flex-1"
                         >

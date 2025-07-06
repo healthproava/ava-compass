@@ -108,36 +108,33 @@ serve(async (req) => {
       throw searchError;
     }
 
-    // Parse and store places
+    // Parse and store places in unified facilities table
     const places = serperData.places || [];
     if (places.length > 0) {
-      const placesData = places.map((place: SerperPlace) => ({
-        search_result_id: searchResult.id,
-        position: place.position,
-        external_uuid: place.uuid,
-        title: place.title,
-        address: place.address,
+      const facilitiesData = places.map((place: SerperPlace) => ({
+        name: place.title,
+        address_line1: place.address,
         latitude: place.latitude,
         longitude: place.longitude,
         rating: place.rating,
-        rating_count: place.ratingCount,
-        place_type: place.type,
-        place_types: place.types,
+        reviews_count: place.ratingCount,
+        facility_type: place.type,
         website: place.website,
-        phone_number: place.phoneNumber,
-        opening_hours: place.openingHours,
-        thumbnail_url: place.thumbnailUrl,
-        cid: place.cid,
-        fid: place.fid,
-        place_id: place.placeId
+        phone: place.phoneNumber,
+        business_hours: place.openingHours,
+        image_urls: place.thumbnailUrl ? [place.thumbnailUrl] : [],
+        data_source: 'serperapi',
+        original_id: place.uuid || place.placeId || place.cid,
+        is_verified: false,
+        is_active: true
       }));
 
-      const { error: placesError } = await supabase
-        .from('serperapi_places')
-        .insert(placesData);
+      const { error: facilitiesError } = await supabase
+        .from('unified_facilities')
+        .insert(facilitiesData);
 
-      if (placesError) {
-        console.error('Error storing places:', placesError);
+      if (facilitiesError) {
+        console.error('Error storing facilities:', facilitiesError);
       }
     }
 
@@ -192,12 +189,21 @@ serve(async (req) => {
       // Continue without AI summary if it fails
     }
 
+    // Fetch the facilities we just inserted for immediate display
+    const { data: facilitiesForDisplay } = await supabase
+      .from('unified_facilities')
+      .select('*')
+      .eq('data_source', 'serperapi')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
     return new Response(
       JSON.stringify({
         success: true,
         searchResultId: searchResult.id,
         placesFound: places.length,
-        places: places.slice(0, 10) // Return first 10 for immediate display
+        facilities: facilitiesForDisplay || [],
+        places: places.slice(0, 10) // Keep for backward compatibility
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
