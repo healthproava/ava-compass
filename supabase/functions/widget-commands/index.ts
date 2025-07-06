@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface WidgetCommand {
-  commandType: 'display_cards' | 'navigate' | 'populate_map' | 'show_tooltip';
+  commandType: 'display_cards' | 'navigate' | 'populate_map' | 'show_tooltip' | 'compare_facilities';
   commandData: any;
   userId?: string;
 }
@@ -92,6 +92,23 @@ serve(async (req) => {
           content: commandData.content,
           position: commandData.position || 'top'
         };
+        break;
+
+      case 'compare_facilities':
+        // Call compare-facilities function
+        const { data: comparisonResult, error: comparisonError } = await supabase.functions.invoke('compare-facilities', {
+          body: {
+            facilityIds: commandData.facilityIds,
+            saveComparison: commandData.saveComparison || false
+          },
+          headers: authHeader ? { Authorization: authHeader } : {}
+        });
+
+        if (comparisonError) {
+          throw comparisonError;
+        }
+
+        response.comparison = comparisonResult;
         break;
 
       default:

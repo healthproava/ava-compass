@@ -1777,6 +1777,33 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_comparisons: {
+        Row: {
+          comparison_data: Json | null
+          created_at: string
+          facility_ids: Json
+          id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          comparison_data?: Json | null
+          created_at?: string
+          facility_ids: Json
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          comparison_data?: Json | null
+          created_at?: string
+          facility_ids?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       facility_images: {
         Row: {
           alt_text: string | null
