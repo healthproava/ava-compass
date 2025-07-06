@@ -110,8 +110,12 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center">
-              <MessageCircle className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 rounded-full overflow-hidden">
+              <img 
+                src="/lovable-uploads/7518e2b4-1e66-4ed5-b127-9469488ec7d7.png" 
+                alt="AVA Assistant" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <h4 className="text-sm font-semibold text-gray-800">AVA Assistant</h4>
