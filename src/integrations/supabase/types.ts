@@ -4424,6 +4424,68 @@ export type Database = {
         }
         Relationships: []
       }
+      widget_commands: {
+        Row: {
+          command_data: Json
+          command_type: string
+          created_at: string
+          id: string
+          processed: boolean
+          user_id: string | null
+        }
+        Insert: {
+          command_data: Json
+          command_type: string
+          created_at?: string
+          id?: string
+          processed?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          command_data?: Json
+          command_type?: string
+          created_at?: string
+          id?: string
+          processed?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      widget_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_data: Json | null
+          interaction_type: string
+          user_id: string | null
+          widget_command_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_data?: Json | null
+          interaction_type: string
+          user_id?: string | null
+          widget_command_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_data?: Json | null
+          interaction_type?: string
+          user_id?: string | null
+          widget_command_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "widget_interactions_widget_command_id_fkey"
+            columns: ["widget_command_id"]
+            isOneToOne: false
+            referencedRelation: "widget_commands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

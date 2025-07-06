@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Mic, MicOff, Minimize2, Maximize2, X, Send } from 'lucide-react';
+import { MessageCircle, Mic, MicOff, Minimize2, Maximize2, X, Send, MapPin, Phone, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AvaWidgetProps {
   isFullScreen?: boolean;
@@ -20,6 +21,9 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>([]);
   const [textInput, setTextInput] = useState('');
+  const [dynamicCards, setDynamicCards] = useState<any[]>([]);
+  const [tooltip, setTooltip] = useState<{ content: string; position: string } | null>(null);
+  const [mapData, setMapData] = useState<any>(null);
   const navigate = useNavigate();
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
@@ -35,6 +39,82 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [showFullScreen, onFullScreenToggle]);
+
+  // Event listeners for widget commands
+  useEffect(() => {
+    const handleWidgetCommand = (event: CustomEvent) => {
+      const { commandType, commandData } = event.detail;
+      processWidgetCommand(commandType, commandData);
+    };
+
+    const handleDisplayCards = (event: CustomEvent) => {
+      setDynamicCards(event.detail.cards || []);
+    };
+
+    const handleNavigate = (event: CustomEvent) => {
+      const { url } = event.detail;
+      if (url) navigate(url);
+    };
+
+    const handlePopulateMap = (event: CustomEvent) => {
+      setMapData(event.detail.mapData);
+    };
+
+    const handleShowTooltip = (event: CustomEvent) => {
+      setTooltip(event.detail.tooltip);
+    };
+
+    // Listen for custom DOM events
+    window.addEventListener('widget-command', handleWidgetCommand as EventListener);
+    window.addEventListener('display-cards', handleDisplayCards as EventListener);
+    window.addEventListener('navigate-to', handleNavigate as EventListener);
+    window.addEventListener('populate-map', handlePopulateMap as EventListener);
+    window.addEventListener('show-tooltip', handleShowTooltip as EventListener);
+
+    return () => {
+      window.removeEventListener('widget-command', handleWidgetCommand as EventListener);
+      window.removeEventListener('display-cards', handleDisplayCards as EventListener);
+      window.removeEventListener('navigate-to', handleNavigate as EventListener);
+      window.removeEventListener('populate-map', handlePopulateMap as EventListener);
+      window.removeEventListener('show-tooltip', handleShowTooltip as EventListener);
+    };
+  }, [navigate]);
+
+  const processWidgetCommand = async (commandType: string, commandData: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('widget-commands', {
+        body: { commandType, commandData }
+      });
+
+      if (error) throw error;
+
+      // Process the response based on command type
+      switch (commandType) {
+        case 'display_cards':
+          setDynamicCards(data.cards || []);
+          break;
+        case 'navigate':
+          if (data.navigationUrl) navigate(data.navigationUrl);
+          break;
+        case 'populate_map':
+          setMapData(data.mapData);
+          break;
+        case 'show_tooltip':
+          setTooltip(data.tooltip);
+          break;
+      }
+
+      // Log interaction
+      await supabase.from('widget_interactions').insert({
+        interaction_type: commandType,
+        interaction_data: commandData,
+        widget_command_id: data.commandId
+      });
+
+    } catch (error) {
+      console.error('Error processing widget command:', error);
+    }
+  };
 
   const handleStartAssessment = () => {
     navigate('/find-care');
@@ -167,7 +247,80 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               </div>
             </div>
           ))}
+          
+          {/* Dynamic Cards Display */}
+          {dynamicCards.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-800">Facility Results</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {dynamicCards.map((card, index) => (
+                  <Card key={index} className="p-3 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-sm">{card.title}</h4>
+                      {card.rating && (
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                          ⭐ {card.rating}
+                        </span>
+                      )}
+                    </div>
+                    {card.address && (
+                      <div className="flex items-center space-x-1 mb-2">
+                        <MapPin className="h-3 w-3 text-gray-500" />
+                        <span className="text-xs text-gray-600">{card.address}</span>
+                      </div>
+                    )}
+                    <div className="flex space-x-2">
+                      {card.phone && (
+                        <Button size="sm" variant="outline" className="text-xs">
+                          <Phone className="h-3 w-3 mr-1" />
+                          Call
+                        </Button>
+                      )}
+                      {card.website && (
+                        <Button size="sm" variant="outline" className="text-xs">
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Visit
+                        </Button>
+                      )}
+                      <Button size="sm" variant="outline" className="text-xs">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        Map
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Map Data Display */}
+          {mapData && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-gray-800">Map View</h3>
+              <div className="bg-gray-100 rounded-lg p-4 text-center">
+                <p className="text-xs text-gray-600">
+                  Map view with {mapData.markers?.length || 0} locations
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Center: {mapData.center?.lat}, {mapData.center?.lng}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
+        
+        {/* Tooltip Display */}
+        {tooltip && (
+          <div className="absolute top-4 right-4 bg-black text-white text-xs p-2 rounded shadow-lg z-50">
+            {tooltip.content}
+            <button 
+              onClick={() => setTooltip(null)}
+              className="ml-2 text-gray-300 hover:text-white"
+            >
+              ×
+            </button>
+          </div>
+        )}
         <div className="p-4 border-t space-y-3">
           <div className="flex space-x-2">
             <Input
