@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useConversation } from '@11labs/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { MessageCircle, Mic, MicOff, Minimize2, Maximize2, X, Send, MapPin, Phone, ExternalLink } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { MessageCircle, Mic, MicOff, Minimize2, Volume2, VolumeX } from 'lucide-react';
 
 interface AvaWidgetProps {
   isFullScreen?: boolean;
@@ -14,352 +13,87 @@ interface AvaWidgetProps {
 
 const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "general" }: AvaWidgetProps) => {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [showFullScreen, setShowFullScreen] = useState(false);
-  const [agentReply, setAgentReply] = useState('');
-  const [assistantName, setAssistantName] = useState<'greeter' | 'ava' | 'ranger'>('ava');
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>([]);
-  const [textInput, setTextInput] = useState('');
-  const [dynamicCards, setDynamicCards] = useState<any[]>([]);
-  const [tooltip, setTooltip] = useState<{ content: string; position: string } | null>(null);
-  const [mapData, setMapData] = useState<any>(null);
+  const [volume, setVolume] = useState(0.8);
+  const [isMuted, setIsMuted] = useState(false);
   const navigate = useNavigate();
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 200 && !showFullScreen) {
-        setShowFullScreen(true);
-        setChatOpen(true);
-        onFullScreenToggle?.();
+  
+  const conversation = useConversation({
+    onConnect: () => {
+      console.log('Connected to ElevenLabs');
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from ElevenLabs');
+    },
+    onMessage: (message) => {
+      console.log('Message received:', message);
+    },
+    onError: (error) => {
+      console.error('ElevenLabs error:', error);
+    },
+    clientTools: {
+      startAssessment: () => {
+        navigate('/find-care');
+        setIsMinimized(true);
+        return "Assessment started";
+      },
+      navigateToPage: (parameters: { page: string }) => {
+        navigate(`/${parameters.page}`);
+        return `Navigated to ${parameters.page}`;
+      },
+      displayFacilities: (parameters: { facilities: any[] }) => {
+        // This could trigger a custom event to display facilities
+        window.dispatchEvent(new CustomEvent('display-cards', { 
+          detail: { cards: parameters.facilities } 
+        }));
+        return `Displayed ${parameters.facilities.length} facilities`;
+      },
+      showTooltip: (parameters: { content: string; position?: string }) => {
+        window.dispatchEvent(new CustomEvent('show-tooltip', { 
+          detail: { tooltip: parameters } 
+        }));
+        return "Tooltip displayed";
       }
-    };
+    }
+  });
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [showFullScreen, onFullScreenToggle]);
-
-  // Event listeners for widget commands
-  useEffect(() => {
-    const handleWidgetCommand = (event: CustomEvent) => {
-      const { commandType, commandData } = event.detail;
-      processWidgetCommand(commandType, commandData);
-    };
-
-    const handleDisplayCards = (event: CustomEvent) => {
-      setDynamicCards(event.detail.cards || []);
-    };
-
-    const handleNavigate = (event: CustomEvent) => {
-      const { url } = event.detail;
-      if (url) navigate(url);
-    };
-
-    const handlePopulateMap = (event: CustomEvent) => {
-      setMapData(event.detail.mapData);
-    };
-
-    const handleShowTooltip = (event: CustomEvent) => {
-      setTooltip(event.detail.tooltip);
-    };
-
-    // Listen for custom DOM events
-    window.addEventListener('widget-command', handleWidgetCommand as EventListener);
-    window.addEventListener('display-cards', handleDisplayCards as EventListener);
-    window.addEventListener('navigate-to', handleNavigate as EventListener);
-    window.addEventListener('populate-map', handlePopulateMap as EventListener);
-    window.addEventListener('show-tooltip', handleShowTooltip as EventListener);
-
-    return () => {
-      window.removeEventListener('widget-command', handleWidgetCommand as EventListener);
-      window.removeEventListener('display-cards', handleDisplayCards as EventListener);
-      window.removeEventListener('navigate-to', handleNavigate as EventListener);
-      window.removeEventListener('populate-map', handlePopulateMap as EventListener);
-      window.removeEventListener('show-tooltip', handleShowTooltip as EventListener);
-    };
-  }, [navigate]);
-
-  const processWidgetCommand = async (commandType: string, commandData: any) => {
+  const handleStartConversation = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('widget-commands', {
-        body: { commandType, commandData }
+      // Request microphone permissions first
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Start the conversation with your ElevenLabs agent
+      // You'll need to replace this with your actual agent ID
+      await conversation.startSession({ 
+        agentId: process.env.REACT_APP_ELEVENLABS_AGENT_ID || 'your-agent-id-here'
       });
-
-      if (error) throw error;
-
-      // Process the response based on command type
-      switch (commandType) {
-        case 'display_cards':
-          setDynamicCards(data.cards || []);
-          break;
-        case 'navigate':
-          if (data.navigationUrl) navigate(data.navigationUrl);
-          break;
-        case 'populate_map':
-          setMapData(data.mapData);
-          break;
-        case 'show_tooltip':
-          setTooltip(data.tooltip);
-          break;
-      }
-
-      // Log interaction
-      await supabase.from('widget_interactions').insert({
-        interaction_type: commandType,
-        interaction_data: commandData,
-        widget_command_id: data.commandId
-      });
-
     } catch (error) {
-      console.error('Error processing widget command:', error);
+      console.error('Failed to start conversation:', error);
+      alert('Failed to start conversation. Please check microphone permissions.');
     }
   };
 
-  const handleStartAssessment = () => {
-    navigate('/find-care');
-    setChatOpen(false);
-    setIsMinimized(true);
-  };
-
-  const handleSendMessage = () => {
-    if (textInput.trim()) {
-      setMessages(prev => [...prev, { text: textInput, isUser: true }]);
-      
-      // Simple mock response - in a real app, this would call an AI service
-      const response = `I received your message: "${textInput}". How can I help you with that?`;
-      setAgentReply(response);
-      setMessages(prev => [...prev, { text: response, isUser: false }]);
-      
-      if (textInput.toLowerCase().includes('veteran')) {
-        setAssistantName('ranger');
-      } else {
-        setAssistantName('ava');
-      }
-      
-      setTextInput('');
+  const handleEndConversation = async () => {
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.error('Failed to end conversation:', error);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
+  const handleVolumeChange = async (newVolume: number) => {
+    setVolume(newVolume);
+    try {
+      await conversation.setVolume({ volume: newVolume });
+    } catch (error) {
+      console.error('Failed to set volume:', error);
     }
   };
 
-  const startVoiceRecognition = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Speech recognition is not supported in this browser.');
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = async (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      setMessages(prev => [...prev, { text: transcript, isUser: true }]);
-      
-      // Simple mock response - in a real app, this would call an AI service
-      const response = `I heard you say: "${transcript}". How can I help you with that?`;
-      setAgentReply(response);
-      setMessages(prev => [...prev, { text: response, isUser: false }]);
-      
-      if (transcript.toLowerCase().includes('veteran')) {
-        setAssistantName('ranger');
-      } else {
-        setAssistantName('ava');
-      }
-    };
-
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('Speech recognition error', event);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
-    recognitionRef.current = recognition;
-    setIsListening(true);
+  const toggleMute = () => {
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    handleVolumeChange(newMuted ? 0 : volume);
   };
-
-  const stopVoiceRecognition = () => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
-  };
-
-  const getAssistantLabel = () => {
-    switch (assistantName) {
-      case 'ranger': return 'Ranger, Veteran Support Bot';
-      case 'ava': return 'AVA Assistant';
-      default: return 'AVA Assistant';
-    }
-  };
-
-  const getAssistantAvatar = () => {
-    switch (assistantName) {
-      case 'ranger': return '/images/ranger.png';
-      case 'ava': return '/images/ava.png';
-      default: return '/images/ava.png';
-    }
-  };
-
-  if (chatOpen) {
-    return (
-      <Card className="fixed inset-4 z-50 flex flex-col bg-white shadow-2xl">
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center">
-              <img 
-                src={getAssistantAvatar()} 
-                alt={getAssistantLabel()} 
-                className="w-6 h-6 rounded-full object-cover"
-              />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold">{getAssistantLabel()}</h4>
-              <p className="text-xs text-gray-500">Online</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setChatOpen(false)}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-gray-500 py-8">
-              <p>Start a conversation by clicking the microphone button or typing below.</p>
-            </div>
-          )}
-          {messages.map((message, index) => (
-            <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs p-3 rounded-lg ${
-                message.isUser 
-                  ? 'bg-sky-500 text-white' 
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
-                {message.text}
-              </div>
-            </div>
-          ))}
-          
-          {/* Dynamic Cards Display */}
-          {dynamicCards.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-800">Facility Results</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {dynamicCards.map((card, index) => (
-                  <Card key={index} className="p-3 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-sm">{card.title}</h4>
-                      {card.rating && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                          ⭐ {card.rating}
-                        </span>
-                      )}
-                    </div>
-                    {card.address && (
-                      <div className="flex items-center space-x-1 mb-2">
-                        <MapPin className="h-3 w-3 text-gray-500" />
-                        <span className="text-xs text-gray-600">{card.address}</span>
-                      </div>
-                    )}
-                    <div className="flex space-x-2">
-                      {card.phone && (
-                        <Button size="sm" variant="outline" className="text-xs">
-                          <Phone className="h-3 w-3 mr-1" />
-                          Call
-                        </Button>
-                      )}
-                      {card.website && (
-                        <Button size="sm" variant="outline" className="text-xs">
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Visit
-                        </Button>
-                      )}
-                      <Button size="sm" variant="outline" className="text-xs">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        Map
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Map Data Display */}
-          {mapData && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-800">Map View</h3>
-              <div className="bg-gray-100 rounded-lg p-4 text-center">
-                <p className="text-xs text-gray-600">
-                  Map view with {mapData.markers?.length || 0} locations
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Center: {mapData.center?.lat}, {mapData.center?.lng}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Tooltip Display */}
-        {tooltip && (
-          <div className="absolute top-4 right-4 bg-black text-white text-xs p-2 rounded shadow-lg z-50">
-            {tooltip.content}
-            <button 
-              onClick={() => setTooltip(null)}
-              className="ml-2 text-gray-300 hover:text-white"
-            >
-              ×
-            </button>
-          </div>
-        )}
-        <div className="p-4 border-t space-y-3">
-          <div className="flex space-x-2">
-            <Input
-              placeholder="Type your message..."
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1"
-            />
-            <Button
-              size="sm"
-              onClick={handleSendMessage}
-              disabled={!textInput.trim()}
-              className="bg-sky-500 hover:bg-sky-600 text-white"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex space-x-2">
-            <Button 
-              size="sm" 
-              className="flex-1 bg-sky-500 hover:bg-sky-600 text-white"
-              onClick={handleStartAssessment}
-            >
-              Start Assessment
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={isListening ? stopVoiceRecognition : startVoiceRecognition}
-              className={isListening ? "border-red-500" : ""}
-            >
-              {isListening ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
-            </Button>
-          </div>
-        </div>
-      </Card>
-    );
-  }
 
   if (isMinimized) {
     return (
@@ -378,52 +112,85 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center">
-              <img 
-                src={getAssistantAvatar()} 
-                alt={getAssistantLabel()} 
-                className="w-6 h-6 rounded-full object-cover"
-              />
+              <MessageCircle className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-gray-800">{getAssistantLabel()}</h4>
-              <p className="text-xs text-gray-500">Online</p>
+              <h4 className="text-sm font-semibold text-gray-800">AVA Assistant</h4>
+              <p className="text-xs text-gray-500">
+                {conversation.status === 'connected' ? 'Connected' : 'Ready to chat'}
+              </p>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="sm" onClick={() => setChatOpen(true)}>
-              <Maximize2 className="h-3 w-3" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
-              <Minimize2 className="h-3 w-3" />
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
+            <Minimize2 className="h-3 w-3" />
+          </Button>
         </div>
+
         <div className="space-y-3">
           <div className="p-3 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-700">
-              Hi! I'm {getAssistantLabel()}. I can help you find the right support or guide you to the best care.
+              Hi! I'm AVA, your AI assistant. I can help you find senior care facilities, 
+              answer questions, and guide you through the process.
             </p>
-            {agentReply && (
-              <div className="mt-2 text-xs text-sky-700">{agentReply}</div>
+            {conversation.isSpeaking && (
+              <div className="mt-2 text-xs text-sky-700 flex items-center">
+                <div className="animate-pulse w-2 h-2 bg-sky-500 rounded-full mr-2"></div>
+                Speaking...
+              </div>
             )}
           </div>
+
           <div className="flex space-x-2">
-            <Button 
-              size="sm" 
-              className="flex-1 text-xs bg-sky-500 hover:bg-sky-600 text-white"
-              onClick={handleStartAssessment}
-            >
-              Start Assessment
-            </Button>
+            {conversation.status === 'connected' ? (
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="flex-1 text-xs border-red-500 text-red-600 hover:bg-red-50"
+                onClick={handleEndConversation}
+              >
+                <MicOff className="h-3 w-3 mr-1" />
+                End Chat
+              </Button>
+            ) : (
+              <Button 
+                size="sm" 
+                className="flex-1 text-xs bg-sky-500 hover:bg-sky-600 text-white"
+                onClick={handleStartConversation}
+              >
+                <Mic className="h-3 w-3 mr-1" />
+                Start Voice Chat
+              </Button>
+            )}
+            
             <Button
               variant="outline"
               size="sm"
-              onClick={isListening ? stopVoiceRecognition : startVoiceRecognition}
-              className={isListening ? "border-red-500" : ""}
+              onClick={toggleMute}
+              className="px-2"
             >
-              {isListening ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
+              {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
             </Button>
           </div>
+
+          {conversation.status === 'connected' && (
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-600">Volume:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className="flex-1 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-xs text-gray-600 w-8">
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Card>
