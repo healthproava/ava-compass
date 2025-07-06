@@ -62,9 +62,8 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
       // Start the conversation with your ElevenLabs agent
-      // You'll need to replace this with your actual agent ID
       await conversation.startSession({ 
-        agentId: process.env.REACT_APP_ELEVENLABS_AGENT_ID || 'your-agent-id-here'
+        agentId: 'agent_01jz09zh09faprpw904kj05vh2'
       });
     } catch (error) {
       console.error('Failed to start conversation:', error);
