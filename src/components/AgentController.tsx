@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useElevenLabsConversation } from '../hooks/useElevenLabsConversation';
 import { Command } from '../types/elevenlabs';
-import { ThreeMapView, MapMarker } from './MapView'; // Import the new 3D map
+import ThreeMapView, { MapMarker } from './ThreeMapView';
 import { AgentControls } from './AgentControls';
 
 // Your specific Agent ID for "Ava"
@@ -40,7 +40,7 @@ export const AgentController: React.FC = () => {
     response,
     startConversation,
     endConversation,
-  } = useElevenLabsConversation(AGENT_ID, handleCommand as (command: any) => void);
+  } = useElevenLabsConversation(AGENT_ID);
 
   const renderActiveView = () => {
     if (activeView === 'map') {

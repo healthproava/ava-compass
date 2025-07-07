@@ -15,7 +15,7 @@ interface UseElevenLabsConversationReturn extends ConversationState {
   sendMessage: (message: string) => Promise<void>;
 }
 
-export const useElevenLabsConversation = (agentId: string): UseElevenLabsConversationReturn => {
+export const useElevenLabsConversation = (agentId: string, onCommand?: (command: any) => void): UseElevenLabsConversationReturn => {
   const [state, setState] = useState<ConversationState>({
     isConnected: false,
     isListening: false,
@@ -100,7 +100,7 @@ export const useElevenLabsConversation = (agentId: string): UseElevenLabsConvers
             autoGainControl: true,
             sampleRate: { ideal: 44100, min: 16000 },
             channelCount: 1,
-            latency: { ideal: 0.01, max: 0.1 }
+            // latency: { ideal: 0.01, max: 0.1 } // Not supported in MediaTrackConstraints
           } 
         });
       } catch (err) {
