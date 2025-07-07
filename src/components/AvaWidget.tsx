@@ -45,6 +45,30 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
         navigate(`/${parameters.page}`);
         return `Navigated to ${parameters.page}`;
       },
+      showSearchResultsPanel: (parameters: { facility_data: string[] }) => {
+        // Parse the facility data and format for display
+        const facilities = parameters.facility_data.map((facilityString: string, index: number) => {
+          // Parse the facility string (assuming format: "{name}, {care_type}, {location}")
+          const parts = facilityString.split(', ');
+          return {
+            id: `facility-${index}`,
+            name: parts[0] || 'Unknown Facility',
+            care_type: parts[1] || 'Care Services',
+            location: parts[2] || 'Location TBD',
+            rawData: facilityString
+          };
+        });
+
+        // Dispatch event to show results panel
+        window.dispatchEvent(new CustomEvent('show-search-results', { 
+          detail: { 
+            facilities: facilities,
+            timestamp: new Date().toISOString()
+          } 
+        }));
+        
+        return `Search results panel displayed with ${facilities.length} facilities`;
+      },
       displayFacilities: (parameters: { facilities: any[] }) => {
         // This could trigger a custom event to display facilities
         window.dispatchEvent(new CustomEvent('display-cards', { 
