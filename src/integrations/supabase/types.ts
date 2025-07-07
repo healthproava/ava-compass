@@ -182,6 +182,41 @@ export type Database = {
           },
         ]
       }
+      agent_events: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+          session_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          session_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          session_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_agent_session"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "agent_sessions"
+            referencedColumns: ["session_id"]
+          },
+        ]
+      }
       agent_profiles: {
         Row: {
           bio: string | null
@@ -228,6 +263,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      agent_sessions: {
+        Row: {
+          created_at: string
+          id: number
+          metadata: Json | null
+          session_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          metadata?: Json | null
+          session_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          metadata?: Json | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       agent_todo_items: {
         Row: {

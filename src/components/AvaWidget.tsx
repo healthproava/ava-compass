@@ -19,34 +19,37 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
   
   const conversation = useConversation({
     onConnect: () => {
-      console.log('Connected to ElevenLabs');
+      console.log('✅ Connected to ElevenLabs');
     },
     onDisconnect: () => {
-      console.log('Disconnected from ElevenLabs');
+      console.log('❌ Disconnected from ElevenLabs');
     },
     onMessage: (message) => {
-      console.log('Message received:', message);
+      console.log('📨 Message received:', message);
     },
     onError: (error) => {
-      console.error('ElevenLabs error:', error);
+      console.error('❌ ElevenLabs error:', error);
     },
     clientTools: {
       startAssessment: () => {
-        console.log('startAssessment tool called');
+        console.log('🔧 startAssessment tool called');
         navigate('/find-care');
         setIsMinimized(true);
-        return "Assessment started";
+        return "Assessment started successfully";
       },
       navigate: (parameters: { url: string }) => {
+        console.log('🔧 navigate tool called with:', parameters);
         const cleanUrl = parameters.url.startsWith('/') ? parameters.url : `/${parameters.url}`;
         navigate(cleanUrl);
-        return `Navigated to ${cleanUrl}`;
+        return `Successfully navigated to ${cleanUrl}`;
       },
       navigateToPage: (parameters: { page: string }) => {
+        console.log('🔧 navigateToPage tool called with:', parameters);
         navigate(`/${parameters.page}`);
-        return `Navigated to ${parameters.page}`;
+        return `Successfully navigated to ${parameters.page}`;
       },
       showSearchResultsPanel: (parameters: { facility_data: string[] }) => {
+        console.log('🔧 showSearchResultsPanel tool called with:', parameters);
         // Parse the facility data and format for display
         const facilities = parameters.facility_data.map((facilityString: string, index: number) => {
           // Parse the facility string (assuming format: "{name}, {care_type}, {location}")
@@ -68,20 +71,25 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
           } 
         }));
         
+        console.log('✅ Search results panel displayed with', facilities.length, 'facilities');
         return `Search results panel displayed with ${facilities.length} facilities`;
       },
       displayFacilities: (parameters: { facilities: any[] }) => {
+        console.log('🔧 displayFacilities tool called with:', parameters);
         // This could trigger a custom event to display facilities
         window.dispatchEvent(new CustomEvent('display-cards', { 
           detail: { cards: parameters.facilities } 
         }));
+        console.log('✅ Displayed', parameters.facilities.length, 'facilities');
         return `Displayed ${parameters.facilities.length} facilities`;
       },
       showTooltip: (parameters: { content: string; position?: string }) => {
+        console.log('🔧 showTooltip tool called with:', parameters);
         window.dispatchEvent(new CustomEvent('show-tooltip', { 
           detail: { tooltip: parameters } 
         }));
-        return "Tooltip displayed";
+        console.log('✅ Tooltip displayed');
+        return "Tooltip displayed successfully";
       }
     }
   });
