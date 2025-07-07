@@ -209,7 +209,7 @@ export const useElevenLabsConversation = (agentId: string): UseElevenLabsConvers
     }
   }, []);
 
-  const playAudioResponse = useCallback(async (audioBase64: string, mimeType: string = 'audio/mpeg') => {
+ const playAudioResponse = useCallback(async (audioBase64: string, mimeType: string = 'audio/mpeg') => {
     try {
       updateState({ isSpeaking: true, isListening: false });
       console.log('Playing audio response, size:', audioBase64.length);
