@@ -36,6 +36,11 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
         setIsMinimized(true);
         return "Assessment started";
       },
+      navigate: (parameters: { url: string }) => {
+        const cleanUrl = parameters.url.startsWith('/') ? parameters.url : `/${parameters.url}`;
+        navigate(cleanUrl);
+        return `Navigated to ${cleanUrl}`;
+      },
       navigateToPage: (parameters: { page: string }) => {
         navigate(`/${parameters.page}`);
         return `Navigated to ${parameters.page}`;
