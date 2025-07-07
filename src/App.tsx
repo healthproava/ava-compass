@@ -8,7 +8,7 @@ import { useState } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import AvaWidget from "./components/AvaWidget";
-import VoiceBotDebugger from "./components/VoiceBotDebugger";
+
 import HomePage from "./components/HomePage";
 import FindCarePage from "./components/FindCarePage";
 import TermsPage from "./components/TermsPage";
@@ -52,7 +52,7 @@ const App = () => {
               isFullScreen={avaFullScreen}
               onFullScreenToggle={() => setAvaFullScreen(!avaFullScreen)}
             />
-            <VoiceBotDebugger />
+            
           </div>
         </BrowserRouter>
       </TooltipProvider>
