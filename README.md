@@ -1,73 +1,158 @@
-# Welcome to your Lovable project
+# HealthProAssist - AI-Powered Senior Care Placement
 
-## Project info
+**Your intelligent assistant for finding the perfect senior care solution**
 
-**URL**: https://lovable.dev/projects/fa81f042-67ff-4842-af16-065835f84a26
+HealthProAssist is a comprehensive web application that helps families find, compare, and connect with senior care facilities. Our AI assistant AVA provides personalized guidance through voice and text interactions, making the complex process of finding senior care simple and stress-free.
 
-## How can I edit this code?
+## 🌟 Key Features
 
-There are several ways of editing your application.
+### AVA - AI Voice Assistant
+- **Voice-powered conversations** using ElevenLabs technology
+- **Intelligent facility search** with personalized recommendations
+- **Real-time guidance** through the care selection process
+- **Interactive assessments** to understand care needs
 
-**Use Lovable**
+### Comprehensive Care Tools
+- **Facility Finder** - Search and filter thousands of care facilities
+- **Cost Calculator** - Estimate care costs with detailed breakdowns
+- **Emergency Contacts** - Quick access to essential emergency services
+- **Timeline Planner** - Organize the transition process step-by-step
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fa81f042-67ff-4842-af16-065835f84a26) and start prompting.
+### Smart Search & Comparison
+- **Advanced filtering** by location, care type, amenities, and budget
+- **Side-by-side facility comparison** with detailed metrics
+- **Interactive maps** with facility locations and details
+- **Favorites system** to save and organize potential options
 
-Changes made via Lovable will be committed automatically to this repo.
+### Specialized Support
+- **Veteran care specialists** with VA benefits integration
+- **Memory care expertise** for dementia and Alzheimer's
+- **Assisted living options** from independent to full-care
+- **Home health services** directory and resources
 
-**Use your preferred IDE**
+## 🛠️ Technology Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Frontend
+- **React 18** with TypeScript for type-safe development
+- **Vite** for fast development and optimized builds
+- **Tailwind CSS** with custom design system
+- **shadcn/ui** components for consistent interface
+- **React Query** for efficient data management
+- **React Router** for seamless navigation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Backend & AI
+- **Supabase** for database, authentication, and real-time features
+- **ElevenLabs** for advanced voice AI capabilities
+- **OpenAI** for intelligent conversation processing
+- **Edge Functions** for serverless backend logic
 
-Follow these steps:
+### External Integrations
+- **Google Maps API** for location services
+- **Serper API** for enhanced search capabilities
+- **Stripe** for payment processing
+- **Resend** for email communications
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🚀 Getting Started
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Prerequisites
+- Node.js 18+ and npm
+- Supabase account
+- ElevenLabs API key
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+1. **Clone the repository**
+   ```bash
+   git clone <YOUR_GIT_URL>
+   cd healthproassist
+   ```
 
-**Edit a file directly in GitHub**
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. **Set up environment**
+   - Configure Supabase project settings
+   - Add required API keys to Supabase secrets
+   - Set up authentication providers
 
-**Use GitHub Codespaces**
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Required API Keys
+Configure these in your Supabase project secrets:
+- `ELEVENLABS_API_KEY` - For voice AI functionality
+- `OPENAI_API_KEY` - For conversation processing
+- `GOOGLE_MAPS_API` - For location services
+- `SERPER_API_KEY` - For enhanced search
 
-## What technologies are used for this project?
+## 📱 Core Functionality
 
-This project is built with:
+### For Families
+- **Guided Assessment** - AVA helps identify specific care needs
+- **Personalized Search** - AI-powered facility recommendations
+- **Virtual Tours** - Explore facilities with detailed information
+- **Cost Planning** - Transparent pricing and financial planning tools
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### For Care Facilities
+- **Profile Management** - Showcase amenities and services
+- **Lead Generation** - Connect with qualified families
+- **Analytics Dashboard** - Track engagement and inquiries
+- **Contract Management** - Streamlined paperwork process
 
-## How can I deploy this project?
+### For Care Agents
+- **Client Management** - Organize and track family interactions
+- **Commission Tracking** - Monitor placements and earnings
+- **Resource Library** - Access to care guides and documentation
+- **Referral Network** - Connect with other care professionals
 
-Simply open [Lovable](https://lovable.dev/projects/fa81f042-67ff-4842-af16-065835f84a26) and click on Share -> Publish.
+## 🏗️ Architecture
 
-## Can I connect a custom domain to my Lovable project?
+### Database Schema
+- **User Management** - Multi-role authentication system
+- **Facility Data** - Comprehensive care facility information
+- **Search & Favorites** - User preferences and saved searches
+- **Analytics** - Interaction tracking and insights
 
-Yes, you can!
+### Real-time Features
+- **Live Chat** - Instant communication with AVA
+- **Search Updates** - Real-time facility availability
+- **Notification System** - Important updates and reminders
+- **Collaborative Planning** - Family member coordination
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🔒 Security & Privacy
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **HIPAA Compliance** considerations for health information
+- **Row-Level Security** (RLS) for data protection
+- **Encrypted Communications** for all sensitive data
+- **User Consent Management** for data collection
+
+## 🌐 Deployment
+
+### Lovable Platform
+1. Open [Lovable Project](https://lovable.dev/projects/fa81f042-67ff-4842-af16-065835f84a26)
+2. Click "Share" → "Publish"
+3. Configure custom domain if needed
+
+### Self-Hosting
+1. Build the application: `npm run build`
+2. Deploy to your preferred hosting platform
+3. Configure environment variables
+4. Set up Supabase production environment
+
+## 📄 License & Usage
+
+This project is built for senior care placement services. For commercial usage, licensing, or partnerships, please contact the development team.
+
+## 🤝 Contributing
+
+We welcome contributions from developers passionate about improving senior care accessibility. Please follow our contribution guidelines and code of conduct.
+
+---
+
+**Built with ❤️ for families navigating senior care decisions**
+
+*HealthProAssist - Making senior care placement simple, transparent, and stress-free.*
