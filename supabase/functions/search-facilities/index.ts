@@ -31,66 +31,108 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    const serperApiKey = Deno.env.get('SERPER_API_KEY');
+    if (!serperApiKey) {
+      throw new Error('SERPER_API_KEY not found');
+    }
+
     const { searchParams }: { searchParams: SearchParams } = await req.json();
     
     // Log search request for analytics
     const userId = req.headers.get('user-id');
-    if (userId) {
-      await supabase.from('search_requests').insert({
-        user_id: userId,
-        query_params: searchParams
-      });
-    }
-
-    // Build dynamic query
-    let query = supabase
-      .from('facilities')
-      .select('*')
-      .eq('is_verified', true);
-
-    // Apply filters
+    
+    // Build search query for facilities
+    let searchQuery = '';
     if (searchParams.facilityType) {
-      query = query.eq('facility_type', searchParams.facilityType);
+      searchQuery += `${searchParams.facilityType} `;
+    } else {
+      searchQuery += 'senior care assisted living nursing home ';
     }
-
-    if (searchParams.priceMin !== undefined) {
-      query = query.gte('price_range_min', searchParams.priceMin);
-    }
-
-    if (searchParams.priceMax !== undefined) {
-      query = query.lte('price_range_max', searchParams.priceMax);
-    }
-
-    if (searchParams.acceptsMedicare) {
-      query = query.eq('accepts_medicare', true);
-    }
-
-    if (searchParams.acceptsMedicaid) {
-      query = query.eq('accepts_medicaid', true);
-    }
-
-    if (searchParams.acceptsVA) {
-      query = query.eq('accepts_va_benefits', true);
-    }
-
+    
     if (searchParams.location) {
-      query = query.ilike('city', `%${searchParams.location}%`);
+      searchQuery += `in ${searchParams.location}`;
+    } else {
+      searchQuery += 'near me';
     }
 
-    // Execute query
-    const { data: facilities, error } = await query
-      .order('rating', { ascending: false })
-      .limit(50);
+    console.log('Searching with query:', searchQuery);
 
-    if (error) {
-      console.error('Database error:', error);
-      throw error;
+    // Search using Serper API
+    const serperResponse = await fetch('https://google.serper.dev/places', {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': serperApiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: searchQuery,
+        location: searchParams.location || 'United States',
+        num: 20
+      }),
+    });
+
+    if (!serperResponse.ok) {
+      throw new Error(`Serper API error: ${serperResponse.status}`);
+    }
+
+    const serperData = await serperResponse.json();
+    console.log('Serper response:', serperData);
+
+    // Transform Serper results to our format
+    const facilities = (serperData.places || []).map((place: any, index: number) => ({
+      id: `search-${Date.now()}-${index}`,
+      name: place.title || 'Unknown Facility',
+      address: place.address,
+      phone: place.phoneNumber,
+      website: place.website,
+      rating: place.rating,
+      reviews_count: place.ratingCount,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      facility_type: searchParams.facilityType || 'Senior Care',
+      place_id: place.placeId,
+      thumbnail_url: place.thumbnailUrl,
+      types: place.types || []
+    }));
+
+    // Store search results in database for future reference
+    const { data: searchResult } = await supabase
+      .from('serperapi_search_results')
+      .insert({
+        user_id: userId,
+        search_query: searchQuery,
+        search_parameters: searchParams,
+        raw_response: serperData
+      })
+      .select()
+      .single();
+
+    if (searchResult && facilities.length > 0) {
+      // Store individual places
+      const placesToInsert = facilities.map((facility: any, position: number) => ({
+        search_result_id: searchResult.id,
+        position: position,
+        title: facility.name,
+        address: facility.address,
+        latitude: facility.latitude,
+        longitude: facility.longitude,
+        rating: facility.rating,
+        rating_count: facility.reviews_count,
+        place_type: facility.facility_type,
+        place_types: facility.types,
+        website: facility.website,
+        phone_number: facility.phone,
+        thumbnail_url: facility.thumbnail_url,
+        place_id: facility.place_id
+      }));
+
+      await supabase.from('serperapi_places').insert(placesToInsert);
     }
 
     // Filter by radius if coordinates provided
-    let filteredFacilities = facilities || [];
+    let filteredFacilities = facilities;
     if (searchParams.lat && searchParams.lng && searchParams.radius) {
-      filteredFacilities = filteredFacilities.filter(facility => {
+      filteredFacilities = facilities.filter((facility: any) => {
         if (!facility.latitude || !facility.longitude) return false;
         
         const distance = calculateDistance(
