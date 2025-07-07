@@ -32,6 +32,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
     },
     clientTools: {
       startAssessment: () => {
+        console.log('startAssessment tool called');
         navigate('/find-care');
         setIsMinimized(true);
         return "Assessment started";
