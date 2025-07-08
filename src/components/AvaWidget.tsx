@@ -19,7 +19,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
   const { speak, isPlaying: isSpeaking } = useTextToSpeech();
-  const { user } = useAuth();
+  const { user } = useAuth(); // Optional - can be null for anonymous users
   const navigate = useNavigate();
   
   const conversation = useConversation({
@@ -45,7 +45,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
     overrides: {
       agent: {
         prompt: {
-          prompt: `You are AVA, a helpful senior care advisor. The current user ID is: ${user?.id || 'anonymous'}. Always include this user ID when calling functions that need it. Be patient and wait for user responses - don't disconnect after asking questions.`
+          prompt: `You are AVA, a helpful senior care advisor. The current user ID is: ${user?.id || 'anonymous'}. If the user is anonymous, you can still help them search and explore options, but let them know they'd need to sign up to save favorites or get personalized recommendations.`
         }
       }
     }
