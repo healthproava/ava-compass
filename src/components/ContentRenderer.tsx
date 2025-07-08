@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Maximize2, Download } from 'lucide-react';
+import { Maximize2, Download, NotebookText, Mail, FormInput, MapPin } from 'lucide-react';
 import EmailDrafter from './content/EmailDrafter';
 import DocumentCreator from './content/DocumentCreator';
 import FormBuilder from './content/FormBuilder';
@@ -58,42 +58,118 @@ const ContentRenderer = ({
     switch (contentType) {
       case 'email':
         return (
-          <EmailDrafter 
-            initialData={data}
-            onDownload={handleDownloadPDF}
-          />
+          <div className="notebook-style bg-white border rounded-lg shadow-sm p-6 h-full">
+            <div className="notebook-header flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Mail className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Email Draft</h2>
+                  <p className="text-sm text-gray-500">{data?.subject || 'Draft Email'}</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+            </div>
+            <EmailDrafter 
+              initialData={data}
+              onDownload={handleDownloadPDF}
+            />
+          </div>
         );
       case 'document':
         return (
-          <DocumentCreator 
-            initialData={data}
-            onDownload={handleDownloadPDF}
-          />
+          <div className="notebook-style bg-white border rounded-lg shadow-sm p-6 h-full">
+            <div className="notebook-header flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-bright rounded-full flex items-center justify-center">
+                  <NotebookText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Document</h2>
+                  <p className="text-sm text-gray-500">{data?.title || summary || 'Generated Document'}</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+            </div>
+            <DocumentCreator 
+              initialData={data}
+              onDownload={handleDownloadPDF}
+            />
+          </div>
         );
       case 'form':
         return (
-          <FormBuilder 
-            initialData={data}
-            onDownload={handleDownloadPDF}
-          />
+          <div className="notebook-style bg-white border rounded-lg shadow-sm p-6 h-full">
+            <div className="notebook-header flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <FormInput className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Interactive Form</h2>
+                  <p className="text-sm text-gray-500">{data?.title || 'Generated Form'}</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+            </div>
+            <FormBuilder 
+              initialData={data}
+              onDownload={handleDownloadPDF}
+            />
+          </div>
         );
       case 'map':
         return (
-          <InteractiveMap 
-            markers={data?.markers || []}
-            center={data?.center}
-            zoom={data?.zoom}
-            onDownload={handleDownloadPDF}
-          />
+          <div className="notebook-style bg-white border rounded-lg shadow-sm p-6 h-full">
+            <div className="notebook-header flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                  <MapPin className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Interactive Map</h2>
+                  <p className="text-sm text-gray-500">Location visualization</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+            </div>
+            <InteractiveMap 
+              markers={data?.markers || []}
+              center={data?.center}
+              zoom={data?.zoom}
+              onDownload={handleDownloadPDF}
+            />
+          </div>
         );
       case 'markdown':
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Content Display</h2>
+          <div className="notebook-style bg-white border rounded-lg shadow-sm p-6 h-full">
+            <div className="notebook-header flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                  <NotebookText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Content Display</h2>
+                  <p className="text-sm text-gray-500">Generated content</p>
+                </div>
+              </div>
               <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
-                <Download className="h-4 w-4 mr-1" />
-                PDF
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
               </Button>
             </div>
             <div className="prose max-w-none">

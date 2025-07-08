@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, List, Globe, Mail, FileText, FormInput } from 'lucide-react';
+import { MapPin, List, Globe, Mail, FileText, FormInput, NotebookText } from 'lucide-react';
 import ContentRenderer from './ContentRenderer';
 import ThreeMapView from './ThreeMapView';
 
@@ -130,10 +130,17 @@ const ResultsContainer = ({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="content" className="flex items-center space-x-2">
             {currentContent.type === 'email' && <Mail className="h-4 w-4" />}
-            {currentContent.type === 'document' && <FileText className="h-4 w-4" />}
+            {currentContent.type === 'document' && <NotebookText className="h-4 w-4" />}
             {currentContent.type === 'form' && <FormInput className="h-4 w-4" />}
+            {currentContent.type === 'map' && <MapPin className="h-4 w-4" />}
             {(currentContent.type === 'facilities' || currentContent.type === 'markdown') && <List className="h-4 w-4" />}
-            <span>Content</span>
+            <span>
+              {currentContent.type === 'document' && 'Notebook'}
+              {currentContent.type === 'email' && 'Email'}
+              {currentContent.type === 'form' && 'Form'}
+              {currentContent.type === 'map' && 'Map'}
+              {(currentContent.type === 'facilities' || currentContent.type === 'markdown') && 'Results'}
+            </span>
           </TabsTrigger>
           <TabsTrigger value="map" className="flex items-center space-x-2">
             <Globe className="h-4 w-4" />
