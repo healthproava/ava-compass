@@ -4,6 +4,7 @@ import { useConversation } from '@elevenlabs/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MessageCircle, Mic, MicOff, Minimize2, Volume2, VolumeX } from 'lucide-react';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import * as ClientTools from '@/components/tools/ClientTools';
 
 interface AvaWidgetProps {
@@ -16,6 +17,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
   const [isMinimized, setIsMinimized] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
+  const { speak, isPlaying: isSpeaking } = useTextToSpeech();
   const navigate = useNavigate();
   
   const conversation = useConversation({
@@ -49,9 +51,46 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       highlightFacilityCard: ClientTools.highlightFacilityCard,
       logMessage: ClientTools.logMessage,
       'Navigate-to-page': (parameters: { page_name: string }) => ClientTools.navigateToPage(parameters, navigate),
-      userIntentFlow: ClientTools.userIntentFlow
+      userIntentFlow: ClientTools.userIntentFlow,
+      // Voice Guide Tools
+      provideGuidance: ClientTools.provideGuidance,
+      highlightFormField: ClientTools.highlightFormField,
+      encourageUser: ClientTools.encourageUser,
+      explainNextSteps: ClientTools.explainNextSteps
     }
   });
+
+  // Listen for TTS events
+  useEffect(() => {
+    const handleAvaSpeak = (event: CustomEvent) => {
+      console.log('AVA speak event:', event.detail);
+      if (event.detail.text) {
+        speak(event.detail.text);
+      }
+    };
+
+    const handleHighlightField = (event: CustomEvent) => {
+      console.log('Highlight field event:', event.detail);
+      // Add visual highlighting to form fields
+      const fieldName = event.detail.fieldName;
+      const field = document.querySelector(`[name="${fieldName}"], #${fieldName}, [data-field="${fieldName}"]`);
+      if (field) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        field.classList.add('ring-2', 'ring-primary-bright', 'ring-opacity-50');
+        setTimeout(() => {
+          field.classList.remove('ring-2', 'ring-primary-bright', 'ring-opacity-50');
+        }, 3000);
+      }
+    };
+
+    window.addEventListener('ava-speak', handleAvaSpeak as EventListener);
+    window.addEventListener('highlight-field', handleHighlightField as EventListener);
+
+    return () => {
+      window.removeEventListener('ava-speak', handleAvaSpeak as EventListener);
+      window.removeEventListener('highlight-field', handleHighlightField as EventListener);
+    };
+  }, [speak]);
 
   const handleStartConversation = async () => {
     try {
@@ -156,10 +195,10 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               Hi! I'm AVA, your AI assistant. I can help you find senior care facilities, 
               answer questions, and guide you through the process.
             </p>
-            {conversation.isSpeaking && (
+            {(conversation.isSpeaking || isSpeaking) && (
               <div className={`mt-2 text-sky-700 flex items-center justify-center ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
                 <div className="animate-pulse w-2 h-2 bg-sky-500 rounded-full mr-2"></div>
-                Speaking...
+                {conversation.isSpeaking ? 'Listening...' : 'Speaking...'}
               </div>
             )}
           </div>

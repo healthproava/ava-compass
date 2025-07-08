@@ -252,3 +252,14 @@ export const displayMarkdown = (parameters: {
   }));
   return `Markdown content displayed`;
 };
+
+// Import guide tools
+import * as GuideTools from './GuideTools';
+
+// Export guide tools
+export const {
+  provideGuidance,
+  highlightFormField,
+  encourageUser,
+  explainNextSteps
+} = GuideTools;
