@@ -4,6 +4,7 @@ import { useConversation } from '@elevenlabs/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MessageCircle, Mic, MicOff, Minimize2, Volume2, VolumeX } from 'lucide-react';
+import * as ClientTools from '@/components/tools/ClientTools';
 
 interface AvaWidgetProps {
   isFullScreen?: boolean;
@@ -31,92 +32,17 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       console.error('❌ ElevenLabs error:', error);
     },
     clientTools: {
-      show_facilities_on_map: (parameters: { tags: string; location: string }) => {
-        console.log('🔧 show_facilities_on_map tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('show-facilities-on-map', { 
-          detail: parameters 
-        }));
-        return `Showing facilities on map for ${parameters.location} with tags: ${parameters.tags}`;
-      },
-      Process_and_Structure_Results: (parameters: { SearchResults: any }) => {
-        console.log('🔧 Process_and_Structure_Results tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('show-search-results', { 
-          detail: { 
-            facilities: parameters.SearchResults?.facility_data || [],
-            timestamp: new Date().toISOString()
-          } 
-        }));
-        return `Processed and structured ${parameters.SearchResults?.facility_data?.length || 0} facilities`;
-      },
-      showResultsPanel: (parameters: { results: string }) => {
-        console.log('🔧 showResultsPanel tool called with:', parameters);
-        try {
-          const parsedResults = JSON.parse(parameters.results);
-          window.dispatchEvent(new CustomEvent('show-search-results', { 
-            detail: { 
-              facilities: parsedResults,
-              timestamp: new Date().toISOString()
-            } 
-          }));
-          return `Results panel displayed with ${parsedResults.length} facilities`;
-        } catch (error) {
-          console.error('Failed to parse results:', error);
-          return "Failed to display results panel";
-        }
-      },
-      alertMissingInfo: (parameters: { message: string; missing_fields: string }) => {
-        console.log('🔧 alertMissingInfo tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('alert-missing-info', { 
-          detail: parameters 
-        }));
-        return `Alert displayed for missing fields: ${parameters.missing_fields}`;
-      },
-      openAmenitiesPicker: (parameters: { currentSelection: string }) => {
-        console.log('🔧 openAmenitiesPicker tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('open-amenities-picker', { 
-          detail: parameters 
-        }));
-        return "Amenities picker opened";
-      },
-      openTourModel: (parameters: { facilityId: string; facilityName: string }) => {
-        console.log('🔧 openTourModel tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('open-tour-modal', { 
-          detail: parameters 
-        }));
-        return `Tour modal opened for ${parameters.facilityName}`;
-      },
-      showToastMessage: (parameters: { message: string }) => {
-        console.log('🔧 showToastMessage tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: parameters 
-        }));
-        return `Toast message shown: ${parameters.message}`;
-      },
-      highlightFacilityCard: (parameters: { 'facilityId ': string }) => {
-        console.log('🔧 highlightFacilityCard tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('highlight-facility', { 
-          detail: { facilityId: parameters['facilityId '] } 
-        }));
-        return `Highlighted facility: ${parameters['facilityId ']}`;
-      },
-      logMessage: (parameters: { message: string }) => {
-        console.log('🔧 logMessage tool called with:', parameters);
-        console.log('📝 Agent Log:', parameters.message);
-        return `Message logged: ${parameters.message}`;
-      },
-      'Navigate-to-page': (parameters: { page_name: string }) => {
-        console.log('🔧 Navigate-to-page tool called with:', parameters);
-        const cleanPage = parameters.page_name.startsWith('/') ? parameters.page_name : `/${parameters.page_name}`;
-        navigate(cleanPage);
-        return `Navigated to page: ${cleanPage}`;
-      },
-      userIntentFlow: (parameters: { patientInformation: any; userInput: any[] }) => {
-        console.log('🔧 userIntentFlow tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('user-intent-flow', { 
-          detail: parameters 
-        }));
-        return "User intent flow initiated";
-      }
+      show_facilities_on_map: ClientTools.showFacilitiesOnMap,
+      Process_and_Structure_Results: ClientTools.processAndStructureResults,
+      showResultsPanel: ClientTools.showResultsPanel,
+      alertMissingInfo: ClientTools.alertMissingInfo,
+      openAmenitiesPicker: ClientTools.openAmenitiesPicker,
+      openTourModel: ClientTools.openTourModel,
+      showToastMessage: ClientTools.showToastMessage,
+      highlightFacilityCard: ClientTools.highlightFacilityCard,
+      logMessage: ClientTools.logMessage,
+      'Navigate-to-page': (parameters: { page_name: string }) => ClientTools.navigateToPage(parameters, navigate),
+      userIntentFlow: ClientTools.userIntentFlow
     }
   });
 
