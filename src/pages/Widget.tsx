@@ -62,17 +62,45 @@ const WidgetPage = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left side - AVA Widget */}
-      <div className="w-1/2 p-4 border-r">
+      <div className="w-1/2 p-4 border-r relative">
         <AvaWidget isFullScreen={true} />
+        
+        {/* Results indicator overlay when we have results */}
+        {(facilities.length > 0 || summary) && (
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="bg-sky-100 border border-sky-300 rounded-lg p-3 shadow-lg animate-fade-in">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-sky-500 rounded-full animate-pulse"></div>
+                <span className="text-sky-700 text-sm font-medium">
+                  {facilities.length > 0 && `Found ${facilities.length} facilities`}
+                  {summary && facilities.length === 0 && "Search completed"}
+                </span>
+                <span className="text-sky-600 text-xs">→ See results panel</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Right side - Results */}
-      <div className="w-1/2 p-4">
-        <ResultsContainer 
-          facilities={facilities}
-          summary={summary}
-          isVisible={facilities.length > 0 || !!summary}
-        />
+      <div className="w-1/2 p-4 relative">
+        {(facilities.length === 0 && !summary) ? (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <span className="text-2xl">🏠</span>
+              </div>
+              <p className="text-sm">Ask AVA to search for senior care facilities</p>
+              <p className="text-xs mt-1 text-gray-400">Results will appear here</p>
+            </div>
+          </div>
+        ) : (
+          <ResultsContainer 
+            facilities={facilities}
+            summary={summary}
+            isVisible={true}
+          />
+        )}
       </div>
       
       <Toaster />
