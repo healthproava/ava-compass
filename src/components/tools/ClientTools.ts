@@ -1,5 +1,5 @@
-// ElevenLabs Client Tools
-// These handle tool calls from the ElevenLabs agent
+// Basic ElevenLabs Client Tools
+// Core tools for search, display, and map functionality
 
 export const showFacilitiesOnMap = (parameters: { tags: string; location: string }) => {
   console.log('🔧 show_facilities_on_map tool called with:', parameters);
@@ -7,34 +7,6 @@ export const showFacilitiesOnMap = (parameters: { tags: string; location: string
     detail: parameters 
   }));
   return `Showing facilities on map for ${parameters.location} with tags: ${parameters.tags}`;
-};
-
-export const processAndStructureResults = (parameters: { SearchResults: any }) => {
-  console.log('🔧 Process_and_Structure_Results tool called with:', parameters);
-  window.dispatchEvent(new CustomEvent('show-search-results', { 
-    detail: { 
-      facilities: parameters.SearchResults?.facility_data || [],
-      timestamp: new Date().toISOString()
-    } 
-  }));
-  return `Processed and structured ${parameters.SearchResults?.facility_data?.length || 0} facilities`;
-};
-
-export const showResultsPanel = (parameters: { results: string }) => {
-  console.log('🔧 showResultsPanel tool called with:', parameters);
-  try {
-    const parsedResults = JSON.parse(parameters.results);
-    window.dispatchEvent(new CustomEvent('show-search-results', { 
-      detail: { 
-        facilities: parsedResults,
-        timestamp: new Date().toISOString()
-      } 
-    }));
-    return `Results panel displayed with ${parsedResults.length} facilities`;
-  } catch (error) {
-    console.error('Failed to parse results:', error);
-    return "Failed to display results panel";
-  }
 };
 
 export const showSearchResultsPanel = (parameters: { results: string; summary?: string }) => {
@@ -55,73 +27,12 @@ export const showSearchResultsPanel = (parameters: { results: string; summary?: 
   }
 };
 
-export const alertMissingInfo = (parameters: { message: string; missing_fields: string }) => {
-  console.log('🔧 alertMissingInfo tool called with:', parameters);
-  window.dispatchEvent(new CustomEvent('alert-missing-info', { 
-    detail: parameters 
-  }));
-  return `Alert displayed for missing fields: ${parameters.missing_fields}`;
-};
-
-export const openAmenitiesPicker = (parameters: { currentSelection: string }) => {
-  console.log('🔧 openAmenitiesPicker tool called with:', parameters);
-  window.dispatchEvent(new CustomEvent('open-amenities-picker', { 
-    detail: parameters 
-  }));
-  return "Amenities picker opened";
-};
-
-export const openTourModel = (parameters: { facilityId: string; facilityName: string }) => {
-  console.log('🔧 openTourModel tool called with:', parameters);
-  window.dispatchEvent(new CustomEvent('open-tour-modal', { 
-    detail: parameters 
-  }));
-  return `Tour modal opened for ${parameters.facilityName}`;
-};
-
 export const showToastMessage = (parameters: { message: string }) => {
   console.log('🔧 showToastMessage tool called with:', parameters);
   window.dispatchEvent(new CustomEvent('show-toast', { 
     detail: parameters 
   }));
   return `Toast message shown: ${parameters.message}`;
-};
-
-export const highlightFacilityCard = (parameters: { 'facilityId ': string }) => {
-  console.log('🔧 highlightFacilityCard tool called with:', parameters);
-  window.dispatchEvent(new CustomEvent('highlight-facility', { 
-    detail: { facilityId: parameters['facilityId '] } 
-  }));
-  return `Highlighted facility: ${parameters['facilityId ']}`;
-};
-
-export const logMessage = (parameters: { message: string }) => {
-  console.log('🔧 logMessage tool called with:', parameters);
-  console.log('📝 Agent Log:', parameters.message);
-  return `Message logged: ${parameters.message}`;
-};
-
-export const navigateToPage = (parameters: { page_name: string }, navigate: (path: string) => void) => {
-  console.log('🔧 Navigate-to-page tool called with:', parameters);
-  const cleanPage = parameters.page_name.startsWith('/') ? parameters.page_name : `/${parameters.page_name}`;
-  navigate(cleanPage);
-  return `Navigated to page: ${cleanPage}`;
-};
-
-// Helper function to auto-navigate to appropriate page
-const autoNavigateToAssessment = () => {
-  // Don't navigate if already on widget or find-care pages
-  if (window.location.pathname !== '/widget' && window.location.pathname !== '/find-care') {
-    window.location.href = '/find-care';
-  }
-};
-
-export const userIntentFlow = (parameters: { patientInformation: any; userInput: any[] }) => {
-  console.log('🔧 userIntentFlow tool called with:', parameters);
-  window.dispatchEvent(new CustomEvent('user-intent-flow', { 
-    detail: parameters 
-  }));
-  return "User intent flow initiated";
 };
 
 export const searchFacilities = async (parameters: { 
@@ -135,7 +46,6 @@ export const searchFacilities = async (parameters: {
   radius?: number;
 }) => {
   console.log('🔧 searchFacilities tool called with:', parameters);
-  
   
   try {
     const response = await fetch('https://fktcmikrsgutyicluegr.supabase.co/functions/v1/search-facilities', {
@@ -153,8 +63,11 @@ export const searchFacilities = async (parameters: {
     
     const data = await response.json();
     
-    // Auto-navigate to assessment page and dispatch results
-    autoNavigateToAssessment();
+    // Navigate to find-care page and dispatch results
+    if (window.location.pathname !== '/find-care') {
+      window.location.href = '/find-care';
+    }
+    
     window.dispatchEvent(new CustomEvent('show-search-results', { 
       detail: { 
         facilities: data.facilities || [],
@@ -170,63 +83,12 @@ export const searchFacilities = async (parameters: {
   }
 };
 
-export const displayEmail = (parameters: { 
-  to?: string; 
-  subject?: string; 
-  body?: string; 
-}) => {
-  console.log('🔧 displayEmail tool called with:', parameters);
-  autoNavigateToAssessment();
-  window.dispatchEvent(new CustomEvent('display-content', { 
-    detail: { 
-      contentType: 'email',
-      data: parameters,
-      summary: `Email draft for ${parameters.to || 'recipient'}`
-    } 
-  }));
-  return `Email draft displayed`;
-};
-
-export const displayDocument = (parameters: { 
-  title?: string; 
-  type?: string; 
-  content?: string; 
-}) => {
-  console.log('🔧 displayDocument tool called with:', parameters);
-  autoNavigateToAssessment();
-  window.dispatchEvent(new CustomEvent('display-content', { 
-    detail: { 
-      contentType: 'document',
-      data: parameters,
-      summary: `Document: ${parameters.title || 'Untitled'}`
-    } 
-  }));
-  return `Document displayed`;
-};
-
-export const displayForm = (parameters: { 
-  title?: string; 
-  fields?: any[]; 
-}) => {
-  console.log('🔧 displayForm tool called with:', parameters);
-  autoNavigateToAssessment();
-  window.dispatchEvent(new CustomEvent('display-content', { 
-    detail: { 
-      contentType: 'form',
-      data: parameters,
-      summary: `Form: ${parameters.title || 'Untitled Form'}`
-    } 
-  }));
-  return `Form builder displayed`;
-};
-
 export const displayMap = (parameters: { 
   markers?: any[]; 
   center?: { lat: number; lng: number }; 
   zoom?: number; 
 }) => {
   console.log('🔧 displayMap tool called with:', parameters);
-  autoNavigateToAssessment();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'map',
@@ -236,30 +98,3 @@ export const displayMap = (parameters: {
   }));
   return `Interactive map displayed`;
 };
-
-export const displayMarkdown = (parameters: { 
-  content: string; 
-  title?: string; 
-}) => {
-  console.log('🔧 displayMarkdown tool called with:', parameters);
-  autoNavigateToAssessment();
-  window.dispatchEvent(new CustomEvent('display-content', { 
-    detail: { 
-      contentType: 'markdown',
-      data: parameters.content,
-      summary: parameters.title || 'Content Display'
-    } 
-  }));
-  return `Markdown content displayed`;
-};
-
-// Import guide tools
-import * as GuideTools from './GuideTools';
-
-// Export guide tools
-export const {
-  provideGuidance,
-  highlightFormField,
-  encourageUser,
-  explainNextSteps
-} = GuideTools;

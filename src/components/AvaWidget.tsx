@@ -35,28 +35,10 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
     },
     clientTools: {
       show_facilities_on_map: ClientTools.showFacilitiesOnMap,
-      Process_and_Structure_Results: ClientTools.processAndStructureResults,
-      showResultsPanel: ClientTools.showResultsPanel,
       showSearchResultsPanel: ClientTools.showSearchResultsPanel,
       searchFacilities: ClientTools.searchFacilities,
-      displayEmail: ClientTools.displayEmail,
-      displayDocument: ClientTools.displayDocument,
-      displayForm: ClientTools.displayForm,
       displayMap: ClientTools.displayMap,
-      displayMarkdown: ClientTools.displayMarkdown,
-      alertMissingInfo: ClientTools.alertMissingInfo,
-      openAmenitiesPicker: ClientTools.openAmenitiesPicker,
-      openTourModel: ClientTools.openTourModel,
-      showToastMessage: ClientTools.showToastMessage,
-      highlightFacilityCard: ClientTools.highlightFacilityCard,
-      logMessage: ClientTools.logMessage,
-      'Navigate-to-page': (parameters: { page_name: string }) => ClientTools.navigateToPage(parameters, navigate),
-      userIntentFlow: ClientTools.userIntentFlow,
-      // Voice Guide Tools
-      provideGuidance: ClientTools.provideGuidance,
-      highlightFormField: ClientTools.highlightFormField,
-      encourageUser: ClientTools.encourageUser,
-      explainNextSteps: ClientTools.explainNextSteps
+      showToastMessage: ClientTools.showToastMessage
     }
   });
 
