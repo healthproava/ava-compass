@@ -31,86 +31,91 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       console.error('❌ ElevenLabs error:', error);
     },
     clientTools: {
-      startAssessment: () => {
-        console.log('🔧 startAssessment tool called');
-        navigate('/find-care');
-        setIsMinimized(true);
-        return "Assessment started successfully";
-      },
-      navigate: (parameters: { url: string }) => {
-        console.log('🔧 navigate tool called with:', parameters);
-        const cleanUrl = parameters.url.startsWith('/') ? parameters.url : `/${parameters.url}`;
-        navigate(cleanUrl);
-        return `Successfully navigated to ${cleanUrl}`;
-      },
-      navigateToPage: (parameters: { page: string }) => {
-        console.log('🔧 navigateToPage tool called with:', parameters);
-        navigate(`/${parameters.page}`);
-        return `Successfully navigated to ${parameters.page}`;
-      },
-      showSearchResultsPanel: (parameters: { facility_data: string[] }) => {
-        console.log('🔧 showSearchResultsPanel tool called with:', parameters);
-        // Parse the facility data and format for display
-        const facilities = parameters.facility_data.map((facilityString: string, index: number) => {
-          // Parse the facility string (assuming format: "{name}, {care_type}, {location}")
-          const parts = facilityString.split(', ');
-          return {
-            id: `facility-${index}`,
-            name: parts[0] || 'Unknown Facility',
-            care_type: parts[1] || 'Care Services',
-            location: parts[2] || 'Location TBD',
-            rawData: facilityString
-          };
-        });
-
-        // Dispatch event to show results panel
-        window.dispatchEvent(new CustomEvent('show-search-results', { 
-          detail: { 
-            facilities: facilities,
-            timestamp: new Date().toISOString()
-          } 
-        }));
-        
-        console.log('✅ Search results panel displayed with', facilities.length, 'facilities');
-        return `Search results panel displayed with ${facilities.length} facilities`;
-      },
-      displayFacilities: (parameters: { facilities: any[] }) => {
-        console.log('🔧 displayFacilities tool called with:', parameters);
-        // This could trigger a custom event to display facilities
-        window.dispatchEvent(new CustomEvent('display-cards', { 
-          detail: { cards: parameters.facilities } 
-        }));
-        console.log('✅ Displayed', parameters.facilities.length, 'facilities');
-        return `Displayed ${parameters.facilities.length} facilities`;
-      },
-      displaySearchResults: (parameters: any) => {
-        console.log('🔧 displaySearchResults tool called with:', parameters);
-        // Flexible tool that accepts any data structure
-        window.dispatchEvent(new CustomEvent('show-search-results', { 
-          detail: { 
-            ...parameters,
-            timestamp: new Date().toISOString()
-          } 
-        }));
-        console.log('✅ Search results displayed');
-        return `Search results displayed successfully`;
-      },
-      displayData: (parameters: any) => {
-        console.log('🔧 displayData tool called with:', parameters);
-        // Most flexible tool - accepts absolutely any data
-        window.dispatchEvent(new CustomEvent('display-data', { 
+      show_facilities_on_map: (parameters: { tags: string; location: string }) => {
+        console.log('🔧 show_facilities_on_map tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('show-facilities-on-map', { 
           detail: parameters 
         }));
-        console.log('✅ Data displayed');
-        return `Data displayed successfully`;
+        return `Showing facilities on map for ${parameters.location} with tags: ${parameters.tags}`;
       },
-      showTooltip: (parameters: { content: string; position?: string }) => {
-        console.log('🔧 showTooltip tool called with:', parameters);
-        window.dispatchEvent(new CustomEvent('show-tooltip', { 
-          detail: { tooltip: parameters } 
+      Process_and_Structure_Results: (parameters: { SearchResults: any }) => {
+        console.log('🔧 Process_and_Structure_Results tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('show-search-results', { 
+          detail: { 
+            facilities: parameters.SearchResults?.facility_data || [],
+            timestamp: new Date().toISOString()
+          } 
         }));
-        console.log('✅ Tooltip displayed');
-        return "Tooltip displayed successfully";
+        return `Processed and structured ${parameters.SearchResults?.facility_data?.length || 0} facilities`;
+      },
+      showResultsPanel: (parameters: { results: string }) => {
+        console.log('🔧 showResultsPanel tool called with:', parameters);
+        try {
+          const parsedResults = JSON.parse(parameters.results);
+          window.dispatchEvent(new CustomEvent('show-search-results', { 
+            detail: { 
+              facilities: parsedResults,
+              timestamp: new Date().toISOString()
+            } 
+          }));
+          return `Results panel displayed with ${parsedResults.length} facilities`;
+        } catch (error) {
+          console.error('Failed to parse results:', error);
+          return "Failed to display results panel";
+        }
+      },
+      alertMissingInfo: (parameters: { message: string; missing_fields: string }) => {
+        console.log('🔧 alertMissingInfo tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('alert-missing-info', { 
+          detail: parameters 
+        }));
+        return `Alert displayed for missing fields: ${parameters.missing_fields}`;
+      },
+      openAmenitiesPicker: (parameters: { currentSelection: string }) => {
+        console.log('🔧 openAmenitiesPicker tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('open-amenities-picker', { 
+          detail: parameters 
+        }));
+        return "Amenities picker opened";
+      },
+      openTourModel: (parameters: { facilityId: string; facilityName: string }) => {
+        console.log('🔧 openTourModel tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('open-tour-modal', { 
+          detail: parameters 
+        }));
+        return `Tour modal opened for ${parameters.facilityName}`;
+      },
+      showToastMessage: (parameters: { message: string }) => {
+        console.log('🔧 showToastMessage tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('show-toast', { 
+          detail: parameters 
+        }));
+        return `Toast message shown: ${parameters.message}`;
+      },
+      highlightFacilityCard: (parameters: { 'facilityId ': string }) => {
+        console.log('🔧 highlightFacilityCard tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('highlight-facility', { 
+          detail: { facilityId: parameters['facilityId '] } 
+        }));
+        return `Highlighted facility: ${parameters['facilityId ']}`;
+      },
+      logMessage: (parameters: { message: string }) => {
+        console.log('🔧 logMessage tool called with:', parameters);
+        console.log('📝 Agent Log:', parameters.message);
+        return `Message logged: ${parameters.message}`;
+      },
+      'Navigate-to-page': (parameters: { page_name: string }) => {
+        console.log('🔧 Navigate-to-page tool called with:', parameters);
+        const cleanPage = parameters.page_name.startsWith('/') ? parameters.page_name : `/${parameters.page_name}`;
+        navigate(cleanPage);
+        return `Navigated to page: ${cleanPage}`;
+      },
+      userIntentFlow: (parameters: { patientInformation: any; userInput: any[] }) => {
+        console.log('🔧 userIntentFlow tool called with:', parameters);
+        window.dispatchEvent(new CustomEvent('user-intent-flow', { 
+          detail: parameters 
+        }));
+        return "User intent flow initiated";
       }
     }
   });
