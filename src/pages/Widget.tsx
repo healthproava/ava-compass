@@ -22,12 +22,20 @@ const WidgetPage = () => {
       // Handle flexible data display
     };
 
+    const handleShowToast = (event: CustomEvent) => {
+      console.log('Show toast event:', event.detail);
+      // You can integrate with your toast system here
+      alert(event.detail.message); // Simple fallback for now
+    };
+
     window.addEventListener('show-search-results', handleSearchResults as EventListener);
     window.addEventListener('display-data', handleDisplayData as EventListener);
+    window.addEventListener('show-toast', handleShowToast as EventListener);
 
     return () => {
       window.removeEventListener('show-search-results', handleSearchResults as EventListener);
       window.removeEventListener('display-data', handleDisplayData as EventListener);
+      window.removeEventListener('show-toast', handleShowToast as EventListener);
     };
   }, []);
 
