@@ -1,7 +1,8 @@
 // src/components/MapView.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { supabase } from '@/integrations/supabase/client';
 
 // --- TYPE DEFINITIONS ---
 export interface MapMarker {
@@ -28,9 +29,24 @@ const defaultCenter = {
 };
 
 export const GoogleMapView: React.FC<GoogleMapViewProps> = ({ markers = [], center }) => {
+  const [apiKey, setApiKey] = useState<string>('');
+
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-google-maps-key');
+        if (error) throw error;
+        setApiKey(data.apiKey);
+      } catch (error) {
+        console.error('Error fetching Google Maps API key:', error);
+      }
+    };
+    fetchApiKey();
+  }, []);
+
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: 'AIzaSyAFbNJ5hL7w2WN-u5dz3Q8xB5KR7lJ8pK0', // Use actual API key
+    googleMapsApiKey: apiKey,
   });
 
   if (!isLoaded) {
