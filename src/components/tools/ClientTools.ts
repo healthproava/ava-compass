@@ -115,3 +115,48 @@ export const userIntentFlow = (parameters: { patientInformation: any; userInput:
   }));
   return "User intent flow initiated";
 };
+
+export const searchFacilities = async (parameters: { 
+  location?: string; 
+  facilityType?: string; 
+  priceMin?: number; 
+  priceMax?: number; 
+  acceptsMedicare?: boolean;
+  acceptsMedicaid?: boolean;
+  acceptsVA?: boolean;
+  radius?: number;
+}) => {
+  console.log('🔧 searchFacilities tool called with:', parameters);
+  
+  
+  try {
+    const response = await fetch('https://fktcmikrsgutyicluegr.supabase.co/functions/v1/search-facilities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrdGNtaWtyc2d1dHlpY2x1ZWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNjY3MjEsImV4cCI6MjA2MDc0MjcyMX0.JW9mbH8H38aAi2JOycemGsd-Tv_RtgViREaOcctJpR4',
+      },
+      body: JSON.stringify({ searchParams: parameters })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Search failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Dispatch results to the UI
+    window.dispatchEvent(new CustomEvent('show-search-results', { 
+      detail: { 
+        facilities: data.facilities || [],
+        summary: `Found ${data.total || 0} facilities matching your criteria`,
+        timestamp: new Date().toISOString()
+      } 
+    }));
+    
+    return `Successfully found ${data.total || 0} facilities matching your criteria`;
+  } catch (error) {
+    console.error('Error searching facilities:', error);
+    return `Failed to search facilities: ${error.message}`;
+  }
+};

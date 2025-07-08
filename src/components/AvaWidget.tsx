@@ -36,6 +36,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       Process_and_Structure_Results: ClientTools.processAndStructureResults,
       showResultsPanel: ClientTools.showResultsPanel,
       showSearchResultsPanel: ClientTools.showSearchResultsPanel,
+      searchFacilities: ClientTools.searchFacilities,
       alertMissingInfo: ClientTools.alertMissingInfo,
       openAmenitiesPicker: ClientTools.openAmenitiesPicker,
       openTourModel: ClientTools.openTourModel,
