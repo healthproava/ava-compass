@@ -87,15 +87,7 @@ const ResultsContainer = ({
   }, []);
 
   if (!isVisible && facilities.length === 0 && !summary) {
-    return (
-      <Card className="glass-card p-8 text-center">
-        <div className="text-text-secondary">
-          <Globe className="h-16 w-16 mx-auto mb-4 opacity-30" />
-          <h3 className="text-lg font-medium mb-2">Search Results</h3>
-          <p className="text-sm">Results will appear here when you search for facilities</p>
-        </div>
-      </Card>
-    );
+    return null; // Don't show anything when empty
   }
 
   return (

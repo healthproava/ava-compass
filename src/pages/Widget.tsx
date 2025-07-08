@@ -60,15 +60,21 @@ const WidgetPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <AvaWidget />
+    <div className="min-h-screen bg-background flex">
+      {/* Left side - AVA Widget */}
+      <div className="w-1/2 p-4 border-r">
+        <AvaWidget isFullScreen={true} />
+      </div>
+      
+      {/* Right side - Results */}
+      <div className="w-1/2 p-4">
         <ResultsContainer 
           facilities={facilities}
           summary={summary}
           isVisible={facilities.length > 0 || !!summary}
         />
       </div>
+      
       <Toaster />
     </div>
   );
