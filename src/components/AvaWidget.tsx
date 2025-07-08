@@ -102,30 +102,48 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
   return (
     <Card className={containerClass}>
       <div className={isFullScreen ? "p-6 h-full flex flex-col" : "p-4"}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden">
-              <img 
-                src="/lovable-uploads/7518e2b4-1e66-4ed5-b127-9469488ec7d7.png" 
-                alt="AVA Assistant" 
-                className="w-full h-full object-cover"
-              />
+        {!isFullScreen && (
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full overflow-hidden">
+                <img 
+                  src="/lovable-uploads/7518e2b4-1e66-4ed5-b127-9469488ec7d7.png" 
+                  alt="AVA Assistant" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800 text-sm">AVA Assistant</h4>
+                <p className="text-gray-500 text-xs">
+                  {conversation.status === 'connected' ? 'Connected' : 'Ready to chat'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className={`font-semibold text-gray-800 ${isFullScreen ? 'text-lg' : 'text-sm'}`}>AVA Assistant</h4>
-              <p className={`text-gray-500 ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
-                {conversation.status === 'connected' ? 'Connected' : 'Ready to chat'}
-              </p>
-            </div>
-          </div>
-          {!isFullScreen && (
             <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
               <Minimize2 className="h-3 w-3" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className={`space-y-3 ${isFullScreen ? 'flex-grow flex flex-col justify-center items-center' : ''}`}>
+          {isFullScreen && (
+            <div className="flex flex-col items-center space-y-4 mb-8">
+              <div className="w-20 h-20 rounded-full overflow-hidden">
+                <img 
+                  src="/lovable-uploads/7518e2b4-1e66-4ed5-b127-9469488ec7d7.png" 
+                  alt="AVA Assistant" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-center">
+                <h4 className="font-semibold text-gray-800 text-xl">AVA Assistant</h4>
+                <p className="text-gray-500 text-sm">
+                  {conversation.status === 'connected' ? 'Connected' : 'Ready to chat'}
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div className={`bg-gray-50 rounded-lg ${isFullScreen ? 'p-4 max-w-md text-center' : 'p-3'}`}>
             <p className={`text-gray-700 ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
               Hi! I'm AVA, your AI assistant. I can help you find senior care facilities, 
