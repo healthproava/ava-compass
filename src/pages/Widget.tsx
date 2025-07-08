@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import AvaWidget from '../components/AvaWidget';
 import ResultsContainer from '../components/ResultsContainer';
+import { useToast } from '@/hooks/use-toast';
 
 const WidgetPage = () => {
   const [facilities, setFacilities] = useState<any[]>([]);
   const [summary, setSummary] = useState<string>('');
+  const { toast } = useToast();
   
   // Listen for events from the widget
   useEffect(() => {
@@ -24,8 +26,10 @@ const WidgetPage = () => {
 
     const handleShowToast = (event: CustomEvent) => {
       console.log('Show toast event:', event.detail);
-      // You can integrate with your toast system here
-      alert(event.detail.message); // Simple fallback for now
+      toast({
+        title: "AVA Assistant",
+        description: event.detail.message,
+      });
     };
 
     window.addEventListener('show-search-results', handleSearchResults as EventListener);
