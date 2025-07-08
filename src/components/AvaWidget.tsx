@@ -45,7 +45,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
     overrides: {
       agent: {
         prompt: {
-          prompt: `You are AVA, a helpful senior care advisor. The current user ID is: ${user?.id || 'anonymous'}. If the user is anonymous, you can still help them search and explore options, but let them know they'd need to sign up to save favorites or get personalized recommendations.`
+          prompt: `You are AVA, a helpful senior care advisor. The current user ID is: ${user?.id || 'anonymous'}.`
         }
       }
     }
