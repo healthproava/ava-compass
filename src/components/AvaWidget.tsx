@@ -6,11 +6,18 @@ import { MessageCircle, Mic, MicOff, Minimize2, Send } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { SearchResult, DisplayData, ToastMessage } from '../types';
 
 interface AvaWidgetProps {
   isFullScreen?: boolean;
   onFullScreenToggle?: () => void;
   context?: string;
+  onSearchResults?: (results: SearchResult) => void;
+  onDisplayData?: (data: DisplayData) => void;
+  onShowToast?: (message: ToastMessage) => void;
+  onLoadingChange?: (loading: boolean) => void;
+  onError?: (error: string) => void;
+  isLoading?: boolean;
 }
 
 interface Message {
@@ -18,7 +25,17 @@ interface Message {
   content: string;
 }
 
-const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "general" }: AvaWidgetProps) => {
+const AvaWidget = ({ 
+  isFullScreen = false, 
+  onFullScreenToggle, 
+  context = "general",
+  onSearchResults,
+  onDisplayData,
+  onShowToast,
+  onLoadingChange,
+  onError,
+  isLoading: externalLoading = false
+}: AvaWidgetProps) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -61,6 +78,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
+    onLoadingChange?.(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('ava-chat', {
@@ -77,10 +95,33 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       const assistantMessage: Message = { role: 'assistant', content: data.response };
       setMessages(prev => [...prev, assistantMessage]);
       
+      // Handle search results if returned
+      if (data.searchResults) {
+        const searchResult: SearchResult = {
+          facilities: data.searchResults.facilities || [],
+          summary: data.searchResults.summary || '',
+          query: message,
+          timestamp: new Date()
+        };
+        onSearchResults?.(searchResult);
+      }
+
+      // Handle display data if returned
+      if (data.displayData) {
+        onDisplayData?.(data.displayData);
+      }
+      
       // Speak the response
       if (data.response) {
         speak(data.response);
       }
+
+      // Show success toast
+      onShowToast?.({
+        title: "AVA Assistant",
+        description: "Response generated successfully"
+      });
+
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = { 
@@ -88,8 +129,11 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
         content: 'Sorry, I encountered an error. Please try again.' 
       };
       setMessages(prev => [...prev, errorMessage]);
+      
+      onError?.('Failed to process your request. Please try again.');
     } finally {
       setIsLoading(false);
+      onLoadingChange?.(false);
     }
   };
 
@@ -138,7 +182,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               <div>
                 <h4 className="font-semibold text-gray-800 text-sm">AVA Assistant</h4>
                 <p className="text-gray-500 text-xs">
-                  {isLoading ? 'Thinking...' : 'Ready to chat'}
+                  {(isLoading || externalLoading) ? 'Thinking...' : 'Ready to chat'}
                 </p>
               </div>
             </div>
@@ -161,7 +205,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               <div className="text-center">
                 <h4 className="font-semibold text-gray-800 text-xl">AVA Assistant</h4>
                 <p className="text-gray-500 text-sm">
-                  {isLoading ? 'Thinking...' : 'Ready to chat'}
+                  {(isLoading || externalLoading) ? 'Thinking...' : 'Ready to chat'}
                 </p>
               </div>
             </div>
@@ -190,10 +234,10 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               Hi! I'm AVA, your AI assistant. I can help you find senior care facilities, 
               answer questions, and guide you through the process.
             </p>
-            {(isLoading || isSpeaking) && (
+            {((isLoading || externalLoading) || isSpeaking) && (
               <div className={`mt-2 text-sky-700 flex items-center justify-center ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
                 <div className="animate-pulse w-2 h-2 bg-sky-500 rounded-full mr-2"></div>
-                {isLoading ? 'Thinking...' : 'Speaking...'}
+                {(isLoading || externalLoading) ? 'Thinking...' : 'Speaking...'}
               </div>
             )}
           </div>
@@ -210,7 +254,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
             />
             <Button
               onClick={() => handleSendMessage(inputText)}
-              disabled={isLoading || !inputText.trim()}
+              disabled={(isLoading || externalLoading) || !inputText.trim()}
               size="sm"
             >
               <Send className="h-4 w-4" />
