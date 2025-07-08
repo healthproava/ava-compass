@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useConversation } from '@elevenlabs/react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MessageCircle, Mic, MicOff, Minimize2, Volume2, VolumeX } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { MessageCircle, Mic, MicOff, Minimize2, Send } from 'lucide-react';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useAuth } from '@/hooks/useAuth';
-import * as ClientTools from '@/components/tools/ClientTools';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AvaWidgetProps {
   isFullScreen?: boolean;
@@ -14,111 +13,98 @@ interface AvaWidgetProps {
   context?: string;
 }
 
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "general" }: AvaWidgetProps) => {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [volume, setVolume] = useState(0.8);
-  const [isMuted, setIsMuted] = useState(false);
-  const { speak, isPlaying: isSpeaking } = useTextToSpeech();
-  const { user } = useAuth(); // Optional - can be null for anonymous users
-  const navigate = useNavigate();
-  
-  const conversation = useConversation({
-    onConnect: () => {
-      console.log('✅ Connected to ElevenLabs');
-    },
-    onDisconnect: () => {
-      console.log('❌ Disconnected from ElevenLabs');
-    },
-    onMessage: (message) => {
-      console.log('📨 Message received:', message);
-    },
-    onError: (error) => {
-      console.error('❌ ElevenLabs error:', error);
-    },
-    clientTools: {
-      show_facilities_on_map: ClientTools.showFacilitiesOnMap,
-      showSearchResultsPanel: ClientTools.showSearchResultsPanel,
-      searchFacilities: ClientTools.searchFacilities,
-      displayMap: ClientTools.displayMap,
-      showToastMessage: ClientTools.showToastMessage
-    },
-    overrides: {
-      agent: {
-        prompt: {
-          prompt: `You are AVA, a helpful senior care advisor. The current user ID is: ${user?.id || 'anonymous'}.`
-        }
-      }
-    }
-  });
+  const [isListening, setIsListening] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { speak, isPlaying: isSpeaking, stop } = useTextToSpeech();
+  const { user } = useAuth();
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  // Listen for TTS events
+  // Initialize speech recognition
   useEffect(() => {
-    const handleAvaSpeak = (event: CustomEvent) => {
-      console.log('AVA speak event:', event.detail);
-      if (event.detail.text) {
-        speak(event.detail.text);
-      }
-    };
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
 
-    const handleHighlightField = (event: CustomEvent) => {
-      console.log('Highlight field event:', event.detail);
-      // Add visual highlighting to form fields
-      const fieldName = event.detail.fieldName;
-      const field = document.querySelector(`[name="${fieldName}"], #${fieldName}, [data-field="${fieldName}"]`);
-      if (field) {
-        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        field.classList.add('ring-2', 'ring-primary-bright', 'ring-opacity-50');
-        setTimeout(() => {
-          field.classList.remove('ring-2', 'ring-primary-bright', 'ring-opacity-50');
-        }, 3000);
-      }
-    };
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(transcript);
+        handleSendMessage(transcript);
+      };
 
-    window.addEventListener('ava-speak', handleAvaSpeak as EventListener);
-    window.addEventListener('highlight-field', handleHighlightField as EventListener);
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
 
-    return () => {
-      window.removeEventListener('ava-speak', handleAvaSpeak as EventListener);
-      window.removeEventListener('highlight-field', handleHighlightField as EventListener);
-    };
-  }, [speak]);
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+    }
+  }, []);
 
-  const handleStartConversation = async () => {
+  const handleSendMessage = async (message: string) => {
+    if (!message.trim()) return;
+
+    const userMessage: Message = { role: 'user', content: message };
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
+    setIsLoading(true);
+
     try {
-      // Request microphone permissions first
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Start the conversation with your ElevenLabs agent
-      await conversation.startSession({ 
-        agentId: 'agent_01jzgsmq2vet0ady1zbqs5ydad'
+      const { data, error } = await supabase.functions.invoke('ava-chat', {
+        body: {
+          message: message,
+          context: context,
+          userId: user?.id,
+          conversationHistory: messages
+        }
       });
+
+      if (error) throw error;
+
+      const assistantMessage: Message = { role: 'assistant', content: data.response };
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Speak the response
+      if (data.response) {
+        speak(data.response);
+      }
     } catch (error) {
-      console.error('Failed to start conversation:', error);
-      alert('Failed to start conversation. Please check microphone permissions.');
+      console.error('Error sending message:', error);
+      const errorMessage: Message = { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error. Please try again.' 
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEndConversation = async () => {
-    try {
-      await conversation.endSession();
-    } catch (error) {
-      console.error('Failed to end conversation:', error);
+  const startListening = () => {
+    if (recognitionRef.current && !isListening) {
+      setIsListening(true);
+      recognitionRef.current.start();
     }
   };
 
-  const handleVolumeChange = async (newVolume: number) => {
-    setVolume(newVolume);
-    try {
-      await conversation.setVolume({ volume: newVolume });
-    } catch (error) {
-      console.error('Failed to set volume:', error);
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
     }
-  };
-
-  const toggleMute = () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    handleVolumeChange(newMuted ? 0 : volume);
   };
 
   if (isMinimized && !isFullScreen) {
@@ -152,7 +138,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               <div>
                 <h4 className="font-semibold text-gray-800 text-sm">AVA Assistant</h4>
                 <p className="text-gray-500 text-xs">
-                  {conversation.status === 'connected' ? 'Connected' : 'Ready to chat'}
+                  {isLoading ? 'Thinking...' : 'Ready to chat'}
                 </p>
               </div>
             </div>
@@ -162,7 +148,7 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
           </div>
         )}
 
-        <div className={`space-y-3 ${isFullScreen ? 'flex-grow flex flex-col justify-center items-center' : ''}`}>
+        <div className={`space-y-3 ${isFullScreen ? 'flex-grow flex flex-col' : ''}`}>
           {isFullScreen && (
             <div className="flex flex-col items-center space-y-4 mb-8">
               <div className="w-20 h-20 rounded-full overflow-hidden">
@@ -175,79 +161,69 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
               <div className="text-center">
                 <h4 className="font-semibold text-gray-800 text-xl">AVA Assistant</h4>
                 <p className="text-gray-500 text-sm">
-                  {conversation.status === 'connected' ? 'Connected' : 'Ready to chat'}
+                  {isLoading ? 'Thinking...' : 'Ready to chat'}
                 </p>
               </div>
             </div>
           )}
           
-          <div className={`bg-gray-50 rounded-lg ${isFullScreen ? 'p-4 max-w-md text-center' : 'p-3'}`}>
+          {/* Messages */}
+          {isFullScreen && messages.length > 0 && (
+            <div className="flex-grow overflow-y-auto max-h-64 space-y-2">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`p-2 rounded-lg ${
+                    message.role === 'user'
+                      ? 'bg-sky-100 text-sky-900 ml-auto max-w-xs'
+                      : 'bg-gray-100 text-gray-900 mr-auto max-w-xs'
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <div className={`bg-gray-50 rounded-lg ${isFullScreen ? 'p-4' : 'p-3'}`}>
             <p className={`text-gray-700 ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
               Hi! I'm AVA, your AI assistant. I can help you find senior care facilities, 
               answer questions, and guide you through the process.
             </p>
-            {(conversation.isSpeaking || isSpeaking) && (
+            {(isLoading || isSpeaking) && (
               <div className={`mt-2 text-sky-700 flex items-center justify-center ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
                 <div className="animate-pulse w-2 h-2 bg-sky-500 rounded-full mr-2"></div>
-                {conversation.isSpeaking ? 'Listening...' : 'Speaking...'}
+                {isLoading ? 'Thinking...' : 'Speaking...'}
               </div>
             )}
           </div>
 
-          <div className={`flex space-x-2 ${isFullScreen ? 'justify-center' : ''}`}>
-            {conversation.status === 'connected' ? (
-              <Button 
-                size={isFullScreen ? "lg" : "sm"}
-                variant="outline"
-                className={`border-red-500 text-red-600 hover:bg-red-50 ${isFullScreen ? 'text-base px-8' : 'text-xs flex-1'}`}
-                onClick={handleEndConversation}
-              >
-                <MicOff className={`mr-1 ${isFullScreen ? 'h-5 w-5' : 'h-3 w-3'}`} />
-                End Chat
-              </Button>
-            ) : (
-              <Button 
-                size={isFullScreen ? "lg" : "sm"}
-                className={`bg-sky-500 hover:bg-sky-600 text-white ${isFullScreen ? 'text-base px-8' : 'text-xs flex-1'}`}
-                onClick={handleStartConversation}
-              >
-                <Mic className={`mr-1 ${isFullScreen ? 'h-5 w-5' : 'h-3 w-3'}`} />
-                Start Voice Chat
-              </Button>
-            )}
-            
+          {/* Input area */}
+          <div className="flex space-x-2">
+            <Input
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Type your message..."
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(inputText)}
+              className="flex-1"
+              disabled={isLoading}
+            />
             <Button
-              variant="outline"
-              size={isFullScreen ? "lg" : "sm"}
-              onClick={toggleMute}
-              className="px-2"
+              onClick={() => handleSendMessage(inputText)}
+              disabled={isLoading || !inputText.trim()}
+              size="sm"
             >
-              {isMuted ? 
-                <VolumeX className={isFullScreen ? "h-5 w-5" : "h-3 w-3"} /> : 
-                <Volume2 className={isFullScreen ? "h-5 w-5" : "h-3 w-3"} />
-              }
+              <Send className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={isListening ? stopListening : startListening}
+              variant={isListening ? "default" : "outline"}
+              size="sm"
+              className={isListening ? "bg-red-500 hover:bg-red-600" : ""}
+            >
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </Button>
           </div>
-
-          {conversation.status === 'connected' && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <span className={`text-gray-600 ${isFullScreen ? 'text-sm' : 'text-xs'}`}>Volume:</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={volume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className="flex-1 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-                />
-                <span className={`text-gray-600 w-8 ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
-                  {Math.round(volume * 100)}%
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </Card>
