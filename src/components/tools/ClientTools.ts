@@ -251,18 +251,3 @@ export const displayMarkdown = (parameters: {
   }));
   return `Markdown content displayed`;
 };
-
-// Import assessment tools
-import * as AssessmentTools from './AssessmentTools';
-
-// Export all assessment tools
-export const {
-  collectBasicInformation,
-  assessHealthNeeds,
-  gatherPreferences,
-  requestDocuments,
-  completeAssessment,
-  displayAssessmentProgress,
-  saveAssessmentData,
-  generateRecommendations
-} = AssessmentTools;
