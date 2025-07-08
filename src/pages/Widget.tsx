@@ -29,6 +29,7 @@ const WidgetPage = () => {
       toast({
         title: "AVA Assistant",
         description: event.detail.message,
+        className: "top-4 right-4 fixed",
       });
     };
 
