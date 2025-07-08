@@ -37,6 +37,24 @@ export const showResultsPanel = (parameters: { results: string }) => {
   }
 };
 
+export const showSearchResultsPanel = (parameters: { results: string; summary?: string }) => {
+  console.log('🔧 showSearchResultsPanel tool called with:', parameters);
+  try {
+    const parsedResults = JSON.parse(parameters.results);
+    window.dispatchEvent(new CustomEvent('show-search-results', { 
+      detail: { 
+        facilities: parsedResults,
+        summary: parameters.summary || '',
+        timestamp: new Date().toISOString()
+      } 
+    }));
+    return `Search results panel displayed with ${parsedResults.length} facilities`;
+  } catch (error) {
+    console.error('Failed to parse search results:', error);
+    return "Failed to display search results panel";
+  }
+};
+
 export const alertMissingInfo = (parameters: { message: string; missing_fields: string }) => {
   console.log('🔧 alertMissingInfo tool called with:', parameters);
   window.dispatchEvent(new CustomEvent('alert-missing-info', { 
