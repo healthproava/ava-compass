@@ -83,6 +83,27 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
         console.log('✅ Displayed', parameters.facilities.length, 'facilities');
         return `Displayed ${parameters.facilities.length} facilities`;
       },
+      displaySearchResults: (parameters: any) => {
+        console.log('🔧 displaySearchResults tool called with:', parameters);
+        // Flexible tool that accepts any data structure
+        window.dispatchEvent(new CustomEvent('show-search-results', { 
+          detail: { 
+            ...parameters,
+            timestamp: new Date().toISOString()
+          } 
+        }));
+        console.log('✅ Search results displayed');
+        return `Search results displayed successfully`;
+      },
+      displayData: (parameters: any) => {
+        console.log('🔧 displayData tool called with:', parameters);
+        // Most flexible tool - accepts absolutely any data
+        window.dispatchEvent(new CustomEvent('display-data', { 
+          detail: parameters 
+        }));
+        console.log('✅ Data displayed');
+        return `Data displayed successfully`;
+      },
       showTooltip: (parameters: { content: string; position?: string }) => {
         console.log('🔧 showTooltip tool called with:', parameters);
         window.dispatchEvent(new CustomEvent('show-tooltip', { 
