@@ -125,51 +125,51 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
           )}
         </div>
 
-        <div className={`space-y-3 ${isFullScreen ? 'flex-grow' : ''}`}>
-          <div className={`bg-gray-50 rounded-lg ${isFullScreen ? 'p-4' : 'p-3'}`}>
+        <div className={`space-y-3 ${isFullScreen ? 'flex-grow flex flex-col justify-center items-center' : ''}`}>
+          <div className={`bg-gray-50 rounded-lg ${isFullScreen ? 'p-4 max-w-md text-center' : 'p-3'}`}>
             <p className={`text-gray-700 ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
               Hi! I'm AVA, your AI assistant. I can help you find senior care facilities, 
               answer questions, and guide you through the process.
             </p>
             {conversation.isSpeaking && (
-              <div className={`mt-2 text-sky-700 flex items-center ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
+              <div className={`mt-2 text-sky-700 flex items-center justify-center ${isFullScreen ? 'text-sm' : 'text-xs'}`}>
                 <div className="animate-pulse w-2 h-2 bg-sky-500 rounded-full mr-2"></div>
                 Speaking...
               </div>
             )}
           </div>
 
-          <div className="flex space-x-2">
+          <div className={`flex space-x-2 ${isFullScreen ? 'justify-center' : ''}`}>
             {conversation.status === 'connected' ? (
               <Button 
-                size={isFullScreen ? "default" : "sm"}
+                size={isFullScreen ? "lg" : "sm"}
                 variant="outline"
-                className={`flex-1 border-red-500 text-red-600 hover:bg-red-50 ${isFullScreen ? 'text-sm' : 'text-xs'}`}
+                className={`border-red-500 text-red-600 hover:bg-red-50 ${isFullScreen ? 'text-base px-8' : 'text-xs flex-1'}`}
                 onClick={handleEndConversation}
               >
-                <MicOff className={`mr-1 ${isFullScreen ? 'h-4 w-4' : 'h-3 w-3'}`} />
+                <MicOff className={`mr-1 ${isFullScreen ? 'h-5 w-5' : 'h-3 w-3'}`} />
                 End Chat
               </Button>
             ) : (
               <Button 
-                size={isFullScreen ? "default" : "sm"}
-                className={`flex-1 bg-sky-500 hover:bg-sky-600 text-white ${isFullScreen ? 'text-sm' : 'text-xs'}`}
+                size={isFullScreen ? "lg" : "sm"}
+                className={`bg-sky-500 hover:bg-sky-600 text-white ${isFullScreen ? 'text-base px-8' : 'text-xs flex-1'}`}
                 onClick={handleStartConversation}
               >
-                <Mic className={`mr-1 ${isFullScreen ? 'h-4 w-4' : 'h-3 w-3'}`} />
+                <Mic className={`mr-1 ${isFullScreen ? 'h-5 w-5' : 'h-3 w-3'}`} />
                 Start Voice Chat
               </Button>
             )}
             
             <Button
               variant="outline"
-              size={isFullScreen ? "default" : "sm"}
+              size={isFullScreen ? "lg" : "sm"}
               onClick={toggleMute}
               className="px-2"
             >
               {isMuted ? 
-                <VolumeX className={isFullScreen ? "h-4 w-4" : "h-3 w-3"} /> : 
-                <Volume2 className={isFullScreen ? "h-4 w-4" : "h-3 w-3"} />
+                <VolumeX className={isFullScreen ? "h-5 w-5" : "h-3 w-3"} /> : 
+                <Volume2 className={isFullScreen ? "h-5 w-5" : "h-3 w-3"} />
               }
             </Button>
           </div>
