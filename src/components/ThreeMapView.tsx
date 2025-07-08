@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { GoogleMapView } from './MapView';
 
 export interface MapMarker {
   id: string;
@@ -24,13 +25,14 @@ const ThreeMapView: React.FC<ThreeMapViewProps> = ({
   onToggleFullScreen, 
   onMarkerClick 
 }) => {
+  const defaultCenter = center || { lat: 44.9429, lng: -123.0351 };
+  
   return (
-    <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-      <div className="text-center">
-        <h3 className="text-lg font-medium text-gray-700 mb-2">3D Map View</h3>
-        <p className="text-gray-500">3D map component placeholder</p>
-        <p className="text-sm text-gray-400 mt-2">{markers.length} markers found</p>
-      </div>
+    <div className="w-full h-full">
+      <GoogleMapView 
+        markers={markers}
+        center={defaultCenter}
+      />
     </div>
   );
 };

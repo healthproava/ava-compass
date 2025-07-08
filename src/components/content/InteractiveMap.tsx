@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Download, Search } from 'lucide-react';
+import { GoogleMapView } from '../MapView';
 
 interface MapMarker {
   id: string;
@@ -77,39 +78,15 @@ const InteractiveMap = ({ markers = [], center = { lat: 39.8283, lng: -98.5795 }
 
         {/* Map Container */}
         <div className="relative">
-          <div 
-            ref={mapRef}
-            className="w-full h-96 bg-gradient-to-br from-blue-100 to-green-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(168, 85, 247, 0.05) 0%, transparent 50%)
-              `
-            }}
-          >
-            {/* Placeholder map content */}
-            <div className="text-center">
-              <MapPin className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-              <p className="text-gray-600">Interactive Map View</p>
-              <p className="text-sm text-gray-500">Search for locations to add markers</p>
-            </div>
-
-            {/* Sample markers */}
-            {markers.map((marker, index) => (
-              <div
-                key={marker.id}
-                className="absolute w-6 h-6 bg-red-500 rounded-full border-2 border-white shadow-lg cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform"
-                style={{
-                  left: `${30 + (index * 15)}%`,
-                  top: `${40 + (index * 10)}%`
-                }}
-                onClick={() => setSelectedMarker(marker)}
-                title={marker.title}
-              >
-                <div className="w-full h-full bg-red-500 rounded-full animate-ping opacity-20"></div>
-              </div>
-            ))}
+          <div className="w-full h-96 rounded-lg overflow-hidden">
+            <GoogleMapView 
+              markers={markers.map(marker => ({
+                id: marker.id,
+                position: { lat: marker.lat, lng: marker.lng },
+                title: marker.title
+              }))}
+              center={center}
+            />
           </div>
 
           {/* Marker Info Panel */}

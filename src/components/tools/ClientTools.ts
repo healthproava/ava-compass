@@ -108,6 +108,13 @@ export const navigateToPage = (parameters: { page_name: string }, navigate: (pat
   return `Navigated to page: ${cleanPage}`;
 };
 
+// Helper function to auto-navigate to widget page
+const autoNavigateToWidget = () => {
+  if (window.location.pathname !== '/widget') {
+    window.location.href = '/widget';
+  }
+};
+
 export const userIntentFlow = (parameters: { patientInformation: any; userInput: any[] }) => {
   console.log('🔧 userIntentFlow tool called with:', parameters);
   window.dispatchEvent(new CustomEvent('user-intent-flow', { 
@@ -145,7 +152,8 @@ export const searchFacilities = async (parameters: {
     
     const data = await response.json();
     
-    // Dispatch results to the UI
+    // Auto-navigate to widget page and dispatch results
+    autoNavigateToWidget();
     window.dispatchEvent(new CustomEvent('show-search-results', { 
       detail: { 
         facilities: data.facilities || [],
@@ -167,6 +175,7 @@ export const displayEmail = (parameters: {
   body?: string; 
 }) => {
   console.log('🔧 displayEmail tool called with:', parameters);
+  autoNavigateToWidget();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'email',
@@ -183,6 +192,7 @@ export const displayDocument = (parameters: {
   content?: string; 
 }) => {
   console.log('🔧 displayDocument tool called with:', parameters);
+  autoNavigateToWidget();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'document',
@@ -198,6 +208,7 @@ export const displayForm = (parameters: {
   fields?: any[]; 
 }) => {
   console.log('🔧 displayForm tool called with:', parameters);
+  autoNavigateToWidget();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'form',
@@ -214,6 +225,7 @@ export const displayMap = (parameters: {
   zoom?: number; 
 }) => {
   console.log('🔧 displayMap tool called with:', parameters);
+  autoNavigateToWidget();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'map',
@@ -229,6 +241,7 @@ export const displayMarkdown = (parameters: {
   title?: string; 
 }) => {
   console.log('🔧 displayMarkdown tool called with:', parameters);
+  autoNavigateToWidget();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'markdown',

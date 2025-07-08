@@ -30,7 +30,7 @@ const defaultCenter = {
 export const GoogleMapView: React.FC<GoogleMapViewProps> = ({ markers = [], center }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_Maps_API_KEY as string,
+    googleMapsApiKey: 'AIzaSyAFbNJ5hL7w2WN-u5dz3Q8xB5KR7lJ8pK0', // Use actual API key
   });
 
   if (!isLoaded) {
