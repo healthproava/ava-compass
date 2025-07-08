@@ -108,9 +108,10 @@ export const navigateToPage = (parameters: { page_name: string }, navigate: (pat
   return `Navigated to page: ${cleanPage}`;
 };
 
-// Helper function to auto-navigate to find care page
-const autoNavigateToFindCare = () => {
-  if (window.location.pathname !== '/find-care') {
+// Helper function to auto-navigate to appropriate page
+const autoNavigateToAssessment = () => {
+  // Don't navigate if already on widget or find-care pages
+  if (window.location.pathname !== '/widget' && window.location.pathname !== '/find-care') {
     window.location.href = '/find-care';
   }
 };
@@ -152,8 +153,8 @@ export const searchFacilities = async (parameters: {
     
     const data = await response.json();
     
-    // Auto-navigate to find care page and dispatch results
-    autoNavigateToFindCare();
+    // Auto-navigate to assessment page and dispatch results
+    autoNavigateToAssessment();
     window.dispatchEvent(new CustomEvent('show-search-results', { 
       detail: { 
         facilities: data.facilities || [],
@@ -175,7 +176,7 @@ export const displayEmail = (parameters: {
   body?: string; 
 }) => {
   console.log('🔧 displayEmail tool called with:', parameters);
-  autoNavigateToFindCare();
+  autoNavigateToAssessment();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'email',
@@ -192,7 +193,7 @@ export const displayDocument = (parameters: {
   content?: string; 
 }) => {
   console.log('🔧 displayDocument tool called with:', parameters);
-  autoNavigateToFindCare();
+  autoNavigateToAssessment();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'document',
@@ -208,7 +209,7 @@ export const displayForm = (parameters: {
   fields?: any[]; 
 }) => {
   console.log('🔧 displayForm tool called with:', parameters);
-  autoNavigateToFindCare();
+  autoNavigateToAssessment();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'form',
@@ -225,7 +226,7 @@ export const displayMap = (parameters: {
   zoom?: number; 
 }) => {
   console.log('🔧 displayMap tool called with:', parameters);
-  autoNavigateToFindCare();
+  autoNavigateToAssessment();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'map',
@@ -241,7 +242,7 @@ export const displayMarkdown = (parameters: {
   title?: string; 
 }) => {
   console.log('🔧 displayMarkdown tool called with:', parameters);
-  autoNavigateToFindCare();
+  autoNavigateToAssessment();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'markdown',
