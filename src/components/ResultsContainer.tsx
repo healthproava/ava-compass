@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, List, Globe } from 'lucide-react';
-import ResultsMarkdownDisplay from './ResultsMarkdownDisplay';
+import { MapPin, List, Globe, Mail, FileText, FormInput } from 'lucide-react';
+import ContentRenderer from './ContentRenderer';
 import ThreeMapView from './ThreeMapView';
 
 interface Facility {
@@ -20,20 +19,46 @@ interface Facility {
   image_urls?: string[];
 }
 
+interface ContentData {
+  type: 'facilities' | 'email' | 'document' | 'form' | 'map' | 'markdown';
+  data?: any;
+  summary?: string;
+}
+
 interface ResultsContainerProps {
-  facilities: Facility[];
+  facilities?: Facility[];
   summary?: string;
   isVisible?: boolean;
+  contentData?: ContentData;
 }
 
 const ResultsContainer = ({ 
   facilities = [], 
   summary,
-  isVisible = false 
+  isVisible = false,
+  contentData
 }: ResultsContainerProps) => {
-  const [activeTab, setActiveTab] = useState('list');
+  const [activeTab, setActiveTab] = useState('content');
   const [mapMarkers, setMapMarkers] = useState<any[]>([]);
   const [mapCenter, setMapCenter] = useState({ lat: 44.9429, lng: -123.0351 });
+  const [currentContent, setCurrentContent] = useState<ContentData>({
+    type: 'facilities',
+    data: facilities,
+    summary
+  });
+
+  // Update content when props change
+  useEffect(() => {
+    if (contentData) {
+      setCurrentContent(contentData);
+    } else {
+      setCurrentContent({
+        type: 'facilities',
+        data: facilities,
+        summary
+      });
+    }
+  }, [contentData, facilities, summary]);
 
   // Convert facilities to map markers
   useEffect(() => {
@@ -63,55 +88,52 @@ const ResultsContainer = ({
 
   // Listen for custom events from the widget
   useEffect(() => {
+    const handleDisplayContent = (event: CustomEvent) => {
+      console.log('Display content event:', event.detail);
+      if (event.detail.contentType) {
+        setCurrentContent({
+          type: event.detail.contentType,
+          data: event.detail.data,
+          summary: event.detail.summary
+        });
+        setActiveTab('content');
+      }
+    };
+
     const handleDisplayCards = (event: CustomEvent) => {
       if (event.detail.cards) {
-        // Auto-switch to list view when cards are displayed
-        setActiveTab('list');
+        setActiveTab('content');
       }
     };
 
     const handlePopulateMap = (event: CustomEvent) => {
       if (event.detail.mapData) {
-        // Auto-switch to map view when map data is populated
         setActiveTab('map');
       }
     };
 
+    window.addEventListener('display-content', handleDisplayContent as EventListener);
     window.addEventListener('display-cards', handleDisplayCards as EventListener);
     window.addEventListener('populate-map', handlePopulateMap as EventListener);
 
     return () => {
+      window.removeEventListener('display-content', handleDisplayContent as EventListener);
       window.removeEventListener('display-cards', handleDisplayCards as EventListener);
       window.removeEventListener('populate-map', handlePopulateMap as EventListener);
     };
   }, []);
 
-  if (!isVisible && facilities.length === 0 && !summary) {
-    return null; // Don't show anything when empty
-  }
-
   return (
-    <div className="space-y-4">
-      {/* Results Header */}
-      {(facilities.length > 0 || summary) && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-semibold">Search Results</h2>
-            {facilities.length > 0 && (
-              <Badge variant="secondary">
-                {facilities.length} facilities found
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
-
+    <div className="space-y-4 h-full">
       {/* Results Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="list" className="flex items-center space-x-2">
-            <List className="h-4 w-4" />
-            <span>List View</span>
+          <TabsTrigger value="content" className="flex items-center space-x-2">
+            {currentContent.type === 'email' && <Mail className="h-4 w-4" />}
+            {currentContent.type === 'document' && <FileText className="h-4 w-4" />}
+            {currentContent.type === 'form' && <FormInput className="h-4 w-4" />}
+            {(currentContent.type === 'facilities' || currentContent.type === 'markdown') && <List className="h-4 w-4" />}
+            <span>Content</span>
           </TabsTrigger>
           <TabsTrigger value="map" className="flex items-center space-x-2">
             <Globe className="h-4 w-4" />
@@ -119,26 +141,23 @@ const ResultsContainer = ({
           </TabsTrigger>
         </TabsList>
 
-        {/* List View */}
-        <TabsContent value="list" className="mt-4">
-          <ResultsMarkdownDisplay
-            facilities={facilities}
-            summary={summary}
-            onFacilitySelect={(facility) => {
-              console.log('Selected facility:', facility);
-              // Could trigger map view or detailed view
-            }}
+        {/* Content View */}
+        <TabsContent value="content" className="mt-4 flex-1">
+          <ContentRenderer
+            contentType={currentContent.type}
+            data={currentContent.data}
+            summary={currentContent.summary}
+            isVisible={true}
           />
         </TabsContent>
 
         {/* 3D Map View */}
-        <TabsContent value="map" className="mt-4">
+        <TabsContent value="map" className="mt-4 flex-1">
           <ThreeMapView
             markers={mapMarkers}
             center={mapCenter}
             onMarkerClick={(marker) => {
               console.log('Clicked marker:', marker);
-              // Could show facility details or switch to list view
             }}
           />
         </TabsContent>

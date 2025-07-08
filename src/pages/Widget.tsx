@@ -84,23 +84,11 @@ const WidgetPage = () => {
       
       {/* Right side - Results */}
       <div className="w-1/2 p-4 relative">
-        {(facilities.length === 0 && !summary) ? (
-          <div className="h-full flex items-center justify-center text-gray-500">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-2xl">🏠</span>
-              </div>
-              <p className="text-sm">Ask AVA to search for senior care facilities</p>
-              <p className="text-xs mt-1 text-gray-400">Results will appear here</p>
-            </div>
-          </div>
-        ) : (
-          <ResultsContainer 
-            facilities={facilities}
-            summary={summary}
-            isVisible={true}
-          />
-        )}
+        <ResultsContainer 
+          facilities={facilities}
+          summary={summary}
+          isVisible={true}
+        />
       </div>
       
       <Toaster />

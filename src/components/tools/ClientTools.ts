@@ -160,3 +160,81 @@ export const searchFacilities = async (parameters: {
     return `Failed to search facilities: ${error.message}`;
   }
 };
+
+export const displayEmail = (parameters: { 
+  to?: string; 
+  subject?: string; 
+  body?: string; 
+}) => {
+  console.log('🔧 displayEmail tool called with:', parameters);
+  window.dispatchEvent(new CustomEvent('display-content', { 
+    detail: { 
+      contentType: 'email',
+      data: parameters,
+      summary: `Email draft for ${parameters.to || 'recipient'}`
+    } 
+  }));
+  return `Email draft displayed`;
+};
+
+export const displayDocument = (parameters: { 
+  title?: string; 
+  type?: string; 
+  content?: string; 
+}) => {
+  console.log('🔧 displayDocument tool called with:', parameters);
+  window.dispatchEvent(new CustomEvent('display-content', { 
+    detail: { 
+      contentType: 'document',
+      data: parameters,
+      summary: `Document: ${parameters.title || 'Untitled'}`
+    } 
+  }));
+  return `Document displayed`;
+};
+
+export const displayForm = (parameters: { 
+  title?: string; 
+  fields?: any[]; 
+}) => {
+  console.log('🔧 displayForm tool called with:', parameters);
+  window.dispatchEvent(new CustomEvent('display-content', { 
+    detail: { 
+      contentType: 'form',
+      data: parameters,
+      summary: `Form: ${parameters.title || 'Untitled Form'}`
+    } 
+  }));
+  return `Form builder displayed`;
+};
+
+export const displayMap = (parameters: { 
+  markers?: any[]; 
+  center?: { lat: number; lng: number }; 
+  zoom?: number; 
+}) => {
+  console.log('🔧 displayMap tool called with:', parameters);
+  window.dispatchEvent(new CustomEvent('display-content', { 
+    detail: { 
+      contentType: 'map',
+      data: parameters,
+      summary: `Interactive map with ${parameters.markers?.length || 0} markers`
+    } 
+  }));
+  return `Interactive map displayed`;
+};
+
+export const displayMarkdown = (parameters: { 
+  content: string; 
+  title?: string; 
+}) => {
+  console.log('🔧 displayMarkdown tool called with:', parameters);
+  window.dispatchEvent(new CustomEvent('display-content', { 
+    detail: { 
+      contentType: 'markdown',
+      data: parameters.content,
+      summary: parameters.title || 'Content Display'
+    } 
+  }));
+  return `Markdown content displayed`;
+};
