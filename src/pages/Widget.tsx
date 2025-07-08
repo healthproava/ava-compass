@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import AvaWidget from '../components/AvaWidget';
 import ResultsContainer from '../components/ResultsContainer';
 import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 const WidgetPage = () => {
   const [facilities, setFacilities] = useState<any[]>([]);
@@ -55,6 +56,7 @@ const WidgetPage = () => {
           isVisible={facilities.length > 0 || !!summary}
         />
       </div>
+      <Toaster />
     </div>
   );
 };
