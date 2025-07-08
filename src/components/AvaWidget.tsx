@@ -49,7 +49,16 @@ const AvaWidget = ({ isFullScreen = false, onFullScreenToggle, context = "genera
       highlightFacilityCard: ClientTools.highlightFacilityCard,
       logMessage: ClientTools.logMessage,
       'Navigate-to-page': (parameters: { page_name: string }) => ClientTools.navigateToPage(parameters, navigate),
-      userIntentFlow: ClientTools.userIntentFlow
+      userIntentFlow: ClientTools.userIntentFlow,
+      // Assessment Tools
+      collectBasicInformation: ClientTools.collectBasicInformation,
+      assessHealthNeeds: ClientTools.assessHealthNeeds,
+      gatherPreferences: ClientTools.gatherPreferences,
+      requestDocuments: ClientTools.requestDocuments,
+      completeAssessment: ClientTools.completeAssessment,
+      displayAssessmentProgress: ClientTools.displayAssessmentProgress,
+      saveAssessmentData: ClientTools.saveAssessmentData,
+      generateRecommendations: ClientTools.generateRecommendations
     }
   });
 

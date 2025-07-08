@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
+import AvaWidget from './AvaWidget';
+import ResultsContainer from './ResultsContainer';
 import { 
   MapPin, 
   Phone, 
@@ -27,12 +31,18 @@ import {
   Activity,
   UploadCloud,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Mic,
+  FileText
 } from 'lucide-react';
 
 const FindCarePage = () => {
   const [showResults, setShowResults] = useState(false);
   const [step, setStep] = useState(1);
+  const [assessmentMode, setAssessmentMode] = useState<'voice' | 'form'>('voice');
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [summary, setSummary] = useState<string>('');
+  const { toast } = useToast();
   const totalSteps = 5;
   
   // Form state
@@ -183,6 +193,36 @@ const FindCarePage = () => {
     }
   };
 
+  // Listen for events from AVA widget
+  useEffect(() => {
+    const handleSearchResults = (event: CustomEvent) => {
+      console.log('Search results event:', event.detail);
+      if (event.detail.facilities) {
+        setFacilities(event.detail.facilities);
+        setShowResults(true);
+      }
+      if (event.detail.summary) {
+        setSummary(event.detail.summary);
+      }
+    };
+
+    const handleShowToast = (event: CustomEvent) => {
+      toast({
+        title: "AVA Assistant",
+        description: event.detail.message,
+        duration: 5000,
+      });
+    };
+
+    window.addEventListener('show-search-results', handleSearchResults as EventListener);
+    window.addEventListener('show-toast', handleShowToast as EventListener);
+
+    return () => {
+      window.removeEventListener('show-search-results', handleSearchResults as EventListener);
+      window.removeEventListener('show-toast', handleShowToast as EventListener);
+    };
+  }, [toast]);
+
   if (showResults) {
     return (
       <div className="min-h-screen pt-24 pb-16 bg-surface-soft">
@@ -312,7 +352,51 @@ const FindCarePage = () => {
   return (
     <div className="min-h-screen pt-24 pb-16 bg-surface-soft">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+        {/* Assessment Mode Selection */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+                  Find Your Perfect Care
+                </h1>
+                <p className="text-xl text-text-secondary">
+                  Choose your preferred way to complete your care assessment
+                </p>
+              </div>
+              
+              <div className="flex justify-center space-x-4">
+                <Button
+                  onClick={() => setAssessmentMode('voice')}
+                  variant={assessmentMode === 'voice' ? 'default' : 'outline'}
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <Mic className="h-5 w-5" />
+                  <span>Voice Assessment with AVA</span>
+                </Button>
+                <Button
+                  onClick={() => setAssessmentMode('form')}
+                  variant={assessmentMode === 'form' ? 'default' : 'outline'}
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <FileText className="h-5 w-5" />
+                  <span>Traditional Form</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Split Screen Layout */}
+        <div className="flex gap-6">
+          {/* Left Side - Assessment */}
+          <div className="w-1/2">
+            {assessmentMode === 'voice' ? (
+              <AvaWidget isFullScreen={true} />
+            ) : (
+              <div className="max-w-4xl mx-auto">
           {/* AVA Bot Box */}
           <Card className="glass-card mb-8 border-primary-bright/20">
             <CardContent className="p-6">
@@ -1008,7 +1092,21 @@ const FindCarePage = () => {
               </Button>
             </CardFooter>
           </Card>
+              </div>
+            )}
+          </div>
+
+          {/* Right Side - Results */}
+          <div className="w-1/2">
+            <ResultsContainer 
+              facilities={facilities}
+              summary={summary}
+              isVisible={true}
+            />
+          </div>
         </div>
+        
+        <Toaster />
       </div>
     </div>
   );

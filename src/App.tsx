@@ -46,12 +46,6 @@ const AppContent = () => {
         </Routes>
       </main>
       <Footer />
-      {!isWidgetPage && (
-        <AvaWidget 
-          isFullScreen={avaFullScreen}
-          onFullScreenToggle={() => setAvaFullScreen(!avaFullScreen)}
-        />
-      )}
     </div>
   );
 };

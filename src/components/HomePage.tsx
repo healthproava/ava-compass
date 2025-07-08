@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Heart, Shield, Users, Star, CheckCircle, ArrowRight, Phone, Mail, MapPin, Award, Clock, Search, TrendingUp, Brain, Timer, DollarSign } from 'lucide-react';
+import { Heart, Shield, Users, Star, CheckCircle, ArrowRight, Phone, Mail, MapPin, Award, Clock, Search, TrendingUp, Brain, Timer, DollarSign, Mic } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ParallaxDivider from './ParallaxDivider';
 import FeedbackSystem from './FeedbackSystem';
@@ -81,8 +81,11 @@ const HomePage = () => {
                   Start Your Search
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg shadow-2xl">
-                Meet AVA
+              <Button size="lg" asChild variant="outline" className="border-white bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg shadow-2xl">
+                <Link to="/find-care">
+                  <Mic className="mr-2 h-5 w-5" />
+                  Meet AVA
+                </Link>
               </Button>
             </div>
 

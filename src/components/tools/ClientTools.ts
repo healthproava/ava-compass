@@ -108,10 +108,10 @@ export const navigateToPage = (parameters: { page_name: string }, navigate: (pat
   return `Navigated to page: ${cleanPage}`;
 };
 
-// Helper function to auto-navigate to widget page
-const autoNavigateToWidget = () => {
-  if (window.location.pathname !== '/widget') {
-    window.location.href = '/widget';
+// Helper function to auto-navigate to find care page
+const autoNavigateToFindCare = () => {
+  if (window.location.pathname !== '/find-care') {
+    window.location.href = '/find-care';
   }
 };
 
@@ -152,8 +152,8 @@ export const searchFacilities = async (parameters: {
     
     const data = await response.json();
     
-    // Auto-navigate to widget page and dispatch results
-    autoNavigateToWidget();
+    // Auto-navigate to find care page and dispatch results
+    autoNavigateToFindCare();
     window.dispatchEvent(new CustomEvent('show-search-results', { 
       detail: { 
         facilities: data.facilities || [],
@@ -175,7 +175,7 @@ export const displayEmail = (parameters: {
   body?: string; 
 }) => {
   console.log('🔧 displayEmail tool called with:', parameters);
-  autoNavigateToWidget();
+  autoNavigateToFindCare();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'email',
@@ -192,7 +192,7 @@ export const displayDocument = (parameters: {
   content?: string; 
 }) => {
   console.log('🔧 displayDocument tool called with:', parameters);
-  autoNavigateToWidget();
+  autoNavigateToFindCare();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'document',
@@ -208,7 +208,7 @@ export const displayForm = (parameters: {
   fields?: any[]; 
 }) => {
   console.log('🔧 displayForm tool called with:', parameters);
-  autoNavigateToWidget();
+  autoNavigateToFindCare();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'form',
@@ -225,7 +225,7 @@ export const displayMap = (parameters: {
   zoom?: number; 
 }) => {
   console.log('🔧 displayMap tool called with:', parameters);
-  autoNavigateToWidget();
+  autoNavigateToFindCare();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'map',
@@ -241,7 +241,7 @@ export const displayMarkdown = (parameters: {
   title?: string; 
 }) => {
   console.log('🔧 displayMarkdown tool called with:', parameters);
-  autoNavigateToWidget();
+  autoNavigateToFindCare();
   window.dispatchEvent(new CustomEvent('display-content', { 
     detail: { 
       contentType: 'markdown',
@@ -251,3 +251,18 @@ export const displayMarkdown = (parameters: {
   }));
   return `Markdown content displayed`;
 };
+
+// Import assessment tools
+import * as AssessmentTools from './AssessmentTools';
+
+// Export all assessment tools
+export const {
+  collectBasicInformation,
+  assessHealthNeeds,
+  gatherPreferences,
+  requestDocuments,
+  completeAssessment,
+  displayAssessmentProgress,
+  saveAssessmentData,
+  generateRecommendations
+} = AssessmentTools;
