@@ -12,11 +12,24 @@ const WidgetPage = () => {
   // Listen for events from the widget
   useEffect(() => {
     const handleSearchResults = (event: CustomEvent) => {
+      console.log('Search results event:', event.detail);
       if (event.detail.facilities) {
         setFacilities(event.detail.facilities);
+        // Show results in toast
+        const facilityCount = event.detail.facilities.length;
+        toast({
+          title: "Search Results",
+          description: `Found ${facilityCount} facilities matching your criteria`,
+          duration: 4000,
+        });
       }
       if (event.detail.summary) {
         setSummary(event.detail.summary);
+        toast({
+          title: "Search Summary",
+          description: event.detail.summary,
+          duration: 6000,
+        });
       }
     };
 
