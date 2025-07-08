@@ -26,10 +26,11 @@ const WidgetPage = () => {
 
     const handleShowToast = (event: CustomEvent) => {
       console.log('Show toast event:', event.detail);
+      console.log('Toast being triggered with message:', event.detail.message);
       toast({
         title: "AVA Assistant",
         description: event.detail.message,
-        className: "top-4 right-4 fixed",
+        duration: 5000, // Show for 5 seconds
       });
     };
 
