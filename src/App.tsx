@@ -17,6 +17,7 @@ import AdvertisePage from "./components/AdvertisePage";
 import LoginPage from "./components/LoginPage";
 import InteractionStyles from "./components/InteractionStyles";
 import NotFound from "./pages/NotFound";
+import WidgetPage from "./pages/Widget";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => {
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/advertise" element={<AdvertisePage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/widget" element={<WidgetPage />} />
                 {/* Placeholder routes for future implementation */}
                 <Route path="/contact" element={<div className="pt-24 p-8 text-center"><h1 className="text-2xl">Contact Page Coming Soon</h1></div>} />
                 <Route path="/register" element={<div className="pt-24 p-8 text-center"><h1 className="text-2xl">Register Page Coming Soon</h1></div>} />
