@@ -66,6 +66,30 @@ const AvaWidget = ({
 
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
+        
+        let errorMessage = 'Speech recognition failed. Please try again.';
+        
+        switch (event.error) {
+          case 'no-speech':
+            errorMessage = 'No speech detected. Please ensure your microphone is on and speak clearly.';
+            break;
+          case 'not-allowed':
+            errorMessage = 'Microphone access denied. Please allow microphone permissions and try again.';
+            break;
+          case 'network':
+            errorMessage = 'Network error occurred during speech recognition. Please check your connection.';
+            break;
+          case 'audio-capture':
+            errorMessage = 'No microphone found or audio capture failed. Please check your microphone.';
+            break;
+          case 'aborted':
+            errorMessage = 'Speech recognition was aborted.';
+            break;
+          default:
+            errorMessage = `Speech recognition error: ${event.error}. Please try again.`;
+        }
+        
+        onError?.(errorMessage);
         setIsListening(false);
       };
     }
